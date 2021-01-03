@@ -28,7 +28,7 @@ class Region(ObjectGrid2D):
         self.patches = [[patch.Patch(x, y) for x in range(xsize)] for y in range(ysize)]
 
     def setup_infection(self, model):
-        self.global_num_infected = 10
+        self.global_num_infected = 50
 
         # randomly add the infected number to the grid
 
@@ -58,8 +58,14 @@ class Region(ObjectGrid2D):
     def return_SEIR_variables(self):
         return self.global_num_susceptible, self.global_num_exposed, self.global_num_infected, self.global_num_immune
 
+    def reset_SEIR_variables(self):
+        self.global_num_susceptible = 0
+        self.global_num_exposed = 0
+        self.global_num_infected = 0
+        self.global_num_immune = 0
+
     def update_global_variables_from_given_patch(self, x, y):
-        self.global_num_susceptible -= self.patches[x][y].num_exposed + self.patches[x][y].num_infected
+        self.global_num_susceptible += self.patches[x][y].num_susceptible
         self.global_num_exposed += self.patches[x][y].num_exposed
         self.global_num_infected += self.patches[x][y].num_infected
         self.global_num_immune += self.patches[x][y].num_immune
@@ -92,6 +98,9 @@ class RegionSteppable(Steppable):
         rows = len(patches)
         columns = len(patches[0])
 
+        # need to rest global variables before counting them again
+        model.environments["agent_env"].reset_SEIR_variables()
+
         for x in range(rows):
             for y in range(columns):
                 patch.Patch.make_infections(patches[x][y], beta_lambda_gamma[0])
@@ -103,7 +112,7 @@ class RegionSteppable(Steppable):
         model.environments["agent_env"].print_out_region_patches()
 
         SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
-        print("S:{0}, E:{1}, I:{2}, R:{3}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2], SEIR_variables[3]))
+        print("S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2], SEIR_variables[3]))
 
 
 

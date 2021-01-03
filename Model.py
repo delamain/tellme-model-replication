@@ -6,16 +6,15 @@ the environment and reads off values.
 from panaxea.core.Environment import ObjectGrid, ObjectGrid2D, NumericalGrid2D, Grid2D
 from panaxea.core.Model import Model
 from panaxea.core.Steppables import Agent, Helper
-import random
 import Region
+import DisplayModel
 
-class SimpleAgent(Agent):
+class InfectionAgent(Agent):
 
     def __init__(self, model):
-        super(SimpleAgent, self).__init__()
-        randomX = self.random_xposition_within_grid(model)
-        randomY = self.random_yposition_within_grid(model)
-        #numerical_env.grid[(randomX, randomY)] += 1
+        super(InfectionAgent, self).__init__()
+        randomX = model.environments["agent_env"].random_xposition_within_grid(model)
+        randomY = model.environments["agent_env"].random_yposition_within_grid(model)
 
         # automatically adds agent to the environment
         self.add_agent_to_grid("agent_env", (randomX, randomY), model)
@@ -23,26 +22,10 @@ class SimpleAgent(Agent):
 
         self.end_of_grid = False
 
-    def random_xposition_within_grid(self, model):
-        xlimit = model.environments["agent_env"].xsize - 1
-        return random.randint(0, xlimit)
-
-    def random_yposition_within_grid(self, model):
-        ylimit = model.environments["agent_env"].ysize - 1
-        return random.randint(0, ylimit)
-
     def step_main(self, model):
         current_position = self.environment_positions["agent_env"]
-        # grid_value = model.environments["value_env"].grid[current_position]
-        #
-        # print("Number of agents at poisition ({0}, {1}) is {2}".format(
-        #     current_position[0], current_position[1], grid_value))
 
         number_of_agents_at_patch = model.environments["agent_env"].patches[current_position[0]][current_position[1]].number_of_agents_at_patch()
-        print("Number of agents at patch ({0}, {1}) is {2}".format(
-            current_position[0], current_position[1], number_of_agents_at_patch))
-
-        self.__move_to_next_position(model)
 
     def __move_to_next_position(self, model):
 
@@ -59,23 +42,34 @@ class SimpleAgent(Agent):
             new_position = adjacentPositions[0]
 
         # before moving, need to update the number of agents at that patch
-        model.environments["agent_env"].remove_agent_from_patch(new_position[0], new_position[1])
-        model.environments["agent_env"].add_agent_to_patch(new_position[0], new_position[1])
+        #model.environments["agent_env"].remove_agent_from_patch(new_position[0], new_position[1])
+        #model.environments["agent_env"].add_agent_to_patch(new_position[0], new_position[1])
         self.move_agent("agent_env", new_position, model)
 
-xsize = ysize = 3
-model = Model(xsize * ysize + 5)
+xsize = ysize = 5
+model = Model(150)
+
+population = 500
+R0 = 20
+recovery_period = 7
+latency_period = 20
 
 # Creating the grid automatically binds it to the model
-Region.Region("agent_env", xsize, ysize, model, 1, 1, 1)
+Region.Region("agent_env", xsize, ysize, model, population, R0, recovery_period, latency_period)
 numerical_env = NumericalGrid2D("value_env", xsize, ysize, model)
 
 agents = []
-for x in range(0, 5):
-    agents.append(SimpleAgent(model))
+for x in range(0, population):
+    agents.append(InfectionAgent(model))
     model.schedule.agents.add(agents[x])
     numerical_env.grid[(0, 0)] += 1
 
-model.schedule.helpers.append(Region.RegionHelper())
+model.schedule.helpers.append(Region.RegionSteppable())
+model.environments["agent_env"].setup_infection(model)
+
+displayModel = DisplayModel.DisplayModel(model)
+model.schedule.helpers.append(displayModel)
 
 model.run()
+
+DisplayModel.DisplayModel.display_result(displayModel)
