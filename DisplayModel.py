@@ -12,8 +12,7 @@ class DisplayModel(Steppable):
         self.global_num_exposed_array = []
         self.global_num_immune_array = []
 
-    def step_epilogue(self, model):
-        self.number_of_epochs_count += 1
+    def step_prologue(self, model):
         S, E, I, R = self.model.return_SEIR_variables()
 
         self.global_number_of_epochs.append(self.number_of_epochs_count)
@@ -21,6 +20,7 @@ class DisplayModel(Steppable):
         self.global_num_infected_array.append(E)
         self.global_num_exposed_array.append(I)
         self.global_num_immune_array.append(R)
+        self.number_of_epochs_count += 1
 
     def display_result(self):
         plt.plot(self.global_number_of_epochs, self.global_num_susceptible_array, "-b", label="susceptible")
