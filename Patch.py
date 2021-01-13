@@ -21,11 +21,9 @@ class Patch(Steppable):
 
     def increment_patch_agents(self):
         self.num_susceptible += 1
-        self.population += 1
 
     def decrement_patch_agents(self):
         self.num_susceptible -= 1
-        self.population -= 1
 
     def increment_infectious_agents_setup(self):
         self.num_infected += 1
@@ -36,10 +34,10 @@ class Patch(Steppable):
             numberOfInfectiousAgents = 100
 
         self.num_infected = numberOfInfectiousAgents
-        self.num_susceptible -= numberOfInfectiousAgents
+        self.num_susceptible = self.num_susceptible - numberOfInfectiousAgents
 
-        for i in range(0, int(round(self.num_infected))):
-            self.agents[i].set_agent_infected()
+        for agentToBeInfected in range(0, int(round(self.num_infected))):
+            self.agents[agentToBeInfected].set_agent_infected()
 
     def number_of_agents_at_patch(self):
         return self.population
@@ -74,7 +72,7 @@ class Patch(Steppable):
         if (self.population != 0):
             self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
             if (self.num_infected != 0):
-                print("[{0},{1}]".format(self.x, self.y))
+                print("PATCH FINDING SELF VALUES [{0},{1}]".format(self.x, self.y))
         else:
             self.new_cases_made = 0
 
@@ -129,7 +127,6 @@ class Patch(Steppable):
 
         if (nbr_popn == 0):
             nbr_popn = 1
-
 
         num_travel_incases = num_travel_incases + (num_distribute * (self.population / nbr_popn))
         if (num_distribute != 0):

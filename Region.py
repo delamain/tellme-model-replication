@@ -30,32 +30,63 @@ class Region(ObjectGrid2D):
         self.start_epi_population = 0.5
 
         # matrix of patches
-        self.patches = [[patch.Patch(x, y) for x in range(xsize)] for y in range(ysize)]
+        # patch object has been manipulated to reverse the indexing of [y][x]
+        # temp_patches = [[patch.Patch(y, x) for x in range(xsize)] for y in range(ysize)]
+
+        self.patches = np.zeros(shape=(xsize, ysize), dtype=object)
+
+        for x in range(xsize):
+            for y in range(ysize):
+                self.patches[x][y] = patch.Patch(x, y)
+
+        # patchesList = [[patch.Patch(x, y) for x in range(xsize)] for y in range(ysize)]
+        # self.patches = np.array(patchesList)
+
+
         self.rows = len(self.patches)
         self.columns = len(self.patches[0])
 
     def setup_infection(self, model):
 
+        patch_populations_matrix = np.zeros(shape=(self.rows, self.columns), dtype=int)
+
+        for x in range(self.rows):
+            for y in range(self.columns):
+                patch_populations_matrix[x][y] = self.patches[x][y].number_of_agents_at_patch()
+
         # calculating the index of the 5 patches with the most number of agents
-        patch_populations_matrix = [[self.patches[x][y].number_of_agents_at_patch() for x in range(self.columns)] for y in range(self.rows)]
+        #patch_populations_matrix = [[self.patches[x][y].number_of_agents_at_patch() for x in range(self.rows)] for y in range(self.columns)]
+
+        print("[65, 62] in numpy: {0}", patch_populations_matrix[65][62])
+        print("[62, 65] in numpy: {0}", patch_populations_matrix[62][65])
+
         patch_populations_matrix_numpy = np.array(patch_populations_matrix)
         # np.savetxt("np.txt", patch_populations_matrix_numpy)
+
+        print("[65, 62] in numpy: {0}", patch_populations_matrix_numpy[65, 62])
+        print("[62, 65] in numpy: {0}", patch_populations_matrix_numpy[62, 65])
 
         n = 5
         flat_indices = np.argpartition(patch_populations_matrix_numpy.ravel(), -n)[-n:]
         row_indices, col_indices = np.unravel_index(flat_indices, patch_populations_matrix_numpy.shape)
 
         for j in range(n):
-            #print("[{0},{1}], pop:{2}".format(col_indices[j], row_indices[j]), self.patches[col_indices[j]][row_indices[j]].number_of_agents_at_patch())
-            print(self.patches[col_indices[j]][row_indices[j]].number_of_agents_at_patch())
+            #print("[
+            # {0},{1}], pop:{2}".format(col_indices[j], row_indices[j]), self.patches[col_indices[j]][row_indices[j]].number_of_agents_at_patch())
+            print(row_indices[j], col_indices[j], " ", end='')
+            print(self.patches[row_indices[j]][col_indices[j]].number_of_agents_at_patch(), " ", end='')
 
-        print(patch_populations_matrix_numpy.max())
+        print("\nDOES THIS PRINT", patch_populations_matrix_numpy.max())
+        #print(np.argmax(patch_populations_matrix_numpy))
+        a = patch_populations_matrix_numpy  # Can be of any shape
+        indices = np.where(a == a.max())
+        print(indices)
 
         # print(random.randint(0, 4))
         i = random.randint(0, 4)
-        self.patches[col_indices[i]][row_indices[i]].set_infectious_agents_setup(self.start_epi_population
-                                                                                 * self.patches[col_indices[i]][
-                                                                                     row_indices[
+        self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
+                                                                                 * self.patches[row_indices[i]][
+                                                                                     col_indices[
                                                                                          i]].number_of_agents_at_patch())
 
         # for i in range(n):
@@ -75,7 +106,11 @@ class Region(ObjectGrid2D):
         #     self.patches[randomX][randomY].increment_infectious_agents_setup()
         # print(self.global_population)
 
-        self.global_num_susceptible = self.global_population - self.global_num_infected
+        self.patches[row_indices[i]][col_indices[i]].num_susceptible = self.patches[row_indices[i]][
+                                                                           col_indices[i]].population - \
+                                                                       self.patches[row_indices[i]][
+                                                                           col_indices[i]].num_infected
+        # self.global_num_susceptible = self.global_population - self.global_num_infected
 
     def add_agent_to_patch(self, x, y):
         self.global_population += 1
@@ -111,7 +146,7 @@ class Region(ObjectGrid2D):
 
     def update_global_variables_from_given_patch(self, x, y):
         if (self.patches[x][y].num_infected != 0):
-            print("{0},{1}".format(x, y))
+            print("TEST {0},{1}".format(x, y))
 
 
         self.global_num_susceptible += self.patches[x][y].num_susceptible
@@ -176,7 +211,7 @@ class RegionSteppable(Steppable):
             for y in range(columns):
                 patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(patches[x][y], beta_lambda_gamma[0])
                 if(patch_new_cases_made != 0):
-                    print("[{0},{1}]".format(x, y))
+                    print("TEST [{0},{1}]".format(x, y))
 
                 new_cases_made += patch_new_cases_made
 
