@@ -11,6 +11,13 @@ class LoadGISData:
         self.yllcorner = linecache.getline(popn_density_file, 4)
         self.cellsize = linecache.getline(popn_density_file, 5)
         self.NODATA_value = linecache.getline(popn_density_file, 6)
+
+        # self.NODATA_value = self.NODATA_value.lstrip('-').isdigit()
+        #
+        #
+        # self.NODATA_value = self.NODATA_value.astype(np.float)
+        self.NODATA_value = np.float64(-9999)
+
         self.ascii_grid = np.loadtxt(popn_density_file, skiprows=6)
 
 
@@ -29,6 +36,9 @@ class LoadGISData:
         if (country == "UK"):
             return 64
 
+    def return_NODATA_value(self):
+        return self.NODATA_value
+
     def return_ascii_grid(self):
         return self.ascii_grid
 
@@ -39,13 +49,13 @@ class LoadGISData:
         sum_popn = 0
         for x in range(self.rows):
             for y in range(self.columns):
-                if (self.ascii_grid[x, y] != -9999):
+                if (self.ascii_grid[x, y] != self.NODATA_value):
                     sum_popn += self.ascii_grid[x, y]
 
         return sum_popn
 
     def return_count_of_non_zero_patches(self):
-        return np.count_nonzero(self.ascii_grid != -9999)
+        return np.count_nonzero(self.ascii_grid != self.NODATA_value)
 
 
 

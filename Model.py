@@ -77,7 +77,7 @@ population = gisData.return_population("UK")
 # xsize = ysize = 5
 # population = 1000
 
-model = Model(50)
+model = Model(75)
 R0 = 3
 recovery_period = 5
 latency_period = 1
@@ -91,6 +91,7 @@ region = Region.Region("agent_env", xsize, ysize, model, R0, recovery_period, la
 #     model.schedule.agents.add(agents[x])
 
 ascii_grid = gisData.return_ascii_grid()
+NODATA_value = gisData.return_NODATA_value()
 rows = ascii_grid.shape[0]
 columns = ascii_grid.shape[1]
 
@@ -98,12 +99,12 @@ population_total = 0
 count_of_pop_non_zero_squares = gisData.return_count_of_non_zero_patches()
 sum_popn_of_patches_with_popn_greater_than_zero = gisData.return_sum_popn_of_patches_with_popn_greater_than_zero()
 factor = (1000 * population) / sum_popn_of_patches_with_popn_greater_than_zero
-
+print("Factor value:", factor)
 print("Count of non-zero patches:", count_of_pop_non_zero_squares)
 print("Sum of population, with patches with a popn > 0:", sum_popn_of_patches_with_popn_greater_than_zero)
 count = 0
 
-print("\nDOES THIS PRINT", ascii_grid.max() * factor)
+print("DOES THIS PRINT", ascii_grid.max() * factor)
         #print(np.argmax(patch_populations_matrix_numpy))
 a = ascii_grid  # Can be of any shape
 indices = np.where(a == a.max())
@@ -136,9 +137,13 @@ agentsToBeAddedToSet = []
 
 for x in range(rows):
     for y in range(columns):
-        if (ascii_grid[x, y] != -9999): # if there is a population value
+        if (ascii_grid[x, y] != NODATA_value): # if there is a population value
             population_total += ascii_grid[x, y]
             region.patches[x][y].population = round((ascii_grid[x, y]) * factor)
+
+            if (region.patches[x][y].population != 0):
+                region.patches[x][y].within_border = True
+                region.live_patches.add(region.patches[x][y])
 
             # add all the agents to the patches
             for individualAgent in range(0, region.patches[x][y].population):
@@ -154,7 +159,17 @@ for x in range(rows):
 
 # model.schedule.agents.add(agentsToBeAddedToSet)
 
-print("[65, 62] in patches post for: {0}", region.patches[65][62].population)
+print(len(region.live_patches))
+
+if region.patches[25][30] in region.live_patches:
+    print(region.patches[25][30].population)
+    print("TRUE")
+
+# print(region.live_patches.)
+
+
+
+print("[23, 30] in patches post for: {0}", region.patches[23][30].population)
 print("[62, 65] in patches post for: {0}", region.patches[62][65].population)
 
 

@@ -46,6 +46,8 @@ class Region(ObjectGrid2D):
         self.rows = len(self.patches)
         self.columns = len(self.patches[0])
 
+        self.live_patches = set([])
+
     def setup_infection(self, model):
 
         patch_populations_matrix = np.zeros(shape=(self.rows, self.columns), dtype=int)
@@ -112,13 +114,12 @@ class Region(ObjectGrid2D):
                                                                            col_indices[i]].num_infected
         # self.global_num_susceptible = self.global_population - self.global_num_infected
 
+    # this function will only be called once
+    # increments global population and num susceptible to assist reporting
     def add_agent_to_patch(self, x, y):
         self.global_population += 1
         self.global_num_susceptible += 1
         self.patches[x][y].increment_patch_agents()
-
-    def remove_agent_from_patch(self, x, y):
-        self.patches[x][y].decrement_patch_agents()
 
     def number_of_patches(self):
         return self.rows * self.columns
@@ -145,8 +146,8 @@ class Region(ObjectGrid2D):
         self.global_num_immune = 0
 
     def update_global_variables_from_given_patch(self, x, y):
-        if (self.patches[x][y].num_infected != 0):
-            print("TEST {0},{1}".format(x, y))
+        # if (self.patches[x][y].num_infected != 0):
+        #     print("TEST {0},{1}".format(x, y))
 
 
         self.global_num_susceptible += self.patches[x][y].num_susceptible
@@ -207,28 +208,49 @@ class RegionSteppable(Steppable):
 
         new_cases_made = 0
 
-        for x in range(rows):
-            for y in range(columns):
-                patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(patches[x][y], beta_lambda_gamma[0])
-                if(patch_new_cases_made != 0):
-                    print("TEST [{0},{1}]".format(x, y))
+        # for x in range(rows):
+        #     for y in range(columns):
+        #         patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(patches[x][y], beta_lambda_gamma[0])
+        #         # if(patch_new_cases_made != 0):
+        #         #     print("New cases made at [{0},{1}]".format(x, y))
+        #
+        #         new_cases_made += patch_new_cases_made
+        #
+        # for x in range(rows):
+        #     for y in range(columns):
+        #         patch.Patch.make_infections_second_patch_travelling(patches[x][y], model, travel_rate_travel_short[0], travel_rate_travel_short[1])
+        #
+        # migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
+        # print(migrate_infections)
+        #
+        # for x in range(rows):
+        #     for y in range(columns):
+        #         patch.Patch.make_infections_third_calculate_incidence(patches[x][y], travel_rate_travel_short[0], migrate_infections, global_population)
+        #
+        # for x in range(rows):
+        #     for y in range(columns):
+        #         patch.Patch.update_SEIR_patches(patches[x][y], beta_lambda_gamma[2], beta_lambda_gamma[1])
+        #         model.environments["agent_env"].update_global_variables_from_given_patch(x, y)
 
-                new_cases_made += patch_new_cases_made
+        for currentPatch in model.environments["agent_env"].live_patches:
+            patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0])
+                # if(patch_new_cases_made != 0):
+                #     print("New cases made at [{0},{1}]".format(x, y))
 
-        for x in range(rows):
-            for y in range(columns):
-                patch.Patch.make_infections_second_patch_travelling(patches[x][y], model, travel_rate_travel_short[0], travel_rate_travel_short[1])
+            new_cases_made += patch_new_cases_made
+
+        for currentPatch in model.environments["agent_env"].live_patches:
+            patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0], travel_rate_travel_short[1])
 
         migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
+        print(migrate_infections)
 
-        for x in range(rows):
-            for y in range(columns):
-                patch.Patch.make_infections_third_calculate_incidence(patches[x][y], travel_rate_travel_short[0], migrate_infections, global_population)
+        for currentPatch in model.environments["agent_env"].live_patches:
+            patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population)
 
-        for x in range(rows):
-            for y in range(columns):
-                patch.Patch.update_SEIR_patches(patches[x][y], beta_lambda_gamma[2], beta_lambda_gamma[1])
-                model.environments["agent_env"].update_global_variables_from_given_patch(x, y)
+        for currentPatch in model.environments["agent_env"].live_patches:
+            patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1])
+            model.environments["agent_env"].update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
 
     def step_epilogue(self, model):
         agent_env = model.environments["agent_env"]

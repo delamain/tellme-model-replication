@@ -18,16 +18,10 @@ class Patch(Steppable):
         self.new_cases_made = 0
         self.selfisolation_ticks = 0
         self.agents = []
+        self.within_border = False
 
     def increment_patch_agents(self):
         self.num_susceptible += 1
-
-    def decrement_patch_agents(self):
-        self.num_susceptible -= 1
-
-    def increment_infectious_agents_setup(self):
-        self.num_infected += 1
-        self.num_susceptible -= 1
 
     def set_infectious_agents_setup(self, numberOfInfectiousAgents):
         if (numberOfInfectiousAgents < 100):
@@ -71,8 +65,8 @@ class Patch(Steppable):
         # error catching to avoid dividing by zero where no agents exist at patch
         if (self.population != 0):
             self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
-            if (self.num_infected != 0):
-                print("PATCH FINDING SELF VALUES [{0},{1}]".format(self.x, self.y))
+            # if (self.new_cases_made != 0):
+            #     print("PATCH FINDING SELF VALUES [{0},{1}]".format(self.x, self.y))
         else:
             self.new_cases_made = 0
 
@@ -83,16 +77,27 @@ class Patch(Steppable):
         neighbours = self.get_moore_neighbourhood(model, self.x, self.y)
         nbr_popn = 0
         for neighbour in neighbours:
-            individual_neighbour_population = model.environments["agent_env"].patches[neighbour[0]][
-                neighbour[1]].number_of_agents_at_patch()
-            if (individual_neighbour_population != 0):
+
+            # if the neighbour patch is within live patches
+            # add that neighbour's population to nbr_popn
+            if (model.environments["agent_env"].patches[neighbour[0]][
+                neighbour[1]] in model.environments["agent_env"].live_patches and model.environments["agent_env"].patches[neighbour[0]][
+                neighbour[1]].within_border == True):
+
+                individual_neighbour_population = model.environments["agent_env"].patches[neighbour[0]][
+                    neighbour[1]].number_of_agents_at_patch()
+
                 nbr_popn += individual_neighbour_population
 
-        # NEED TO AMEND - SHOULD BE ONLY VALID PATCHES
-        if (nbr_popn == 0):
-            nbr_popn = 1
+        for neighbour in neighbours:
+            if (model.environments["agent_env"].patches[neighbour[0]][
+                neighbour[1]] in model.environments["agent_env"].live_patches):
 
-        self.num_travel_incases = self.num_travel_incases + (num_distribute * (self.population / nbr_popn))
+                model.environments["agent_env"].patches[neighbour[0]][
+                    neighbour[1]].num_travel_incases = model.environments["agent_env"].patches[neighbour[0]][
+                    neighbour[1]].num_travel_incases + (num_distribute * (self.population / nbr_popn))
+
+        #self.num_travel_incases = self.num_travel_incases + (num_distribute * (self.population / nbr_popn))
 
 
     def make_infections_third_calculate_incidence(self, travel_rate, migrate_infections, global_population):
@@ -145,12 +150,16 @@ class Patch(Steppable):
     # SEIR_lambda transition rate from E to I
     # SEIR_gamma transition rate from I to R
     def update_SEIR_patches(self, SEIR_gamma, SEIR_lambda):
+
         self.num_immune = self.num_immune + (SEIR_gamma * self.num_infected)
 
-        if (SEIR_gamma > 0):
+        if (SEIR_lambda > 0):
             self.num_infected = ((1 - SEIR_gamma) * self.num_infected) + (SEIR_lambda * self.num_exposed)
 
             self.num_exposed = ((1 - SEIR_lambda) * self.num_exposed) + self.num_incidence
+
+            # if (self.num_exposed != 0):
+            #     print("Travelling in cases detected at patch [{0},{1}], {2}".format(self.x, self.y, self.num_exposed))
 
             if (self.num_exposed < 1):
                 self.num_exposed = 0
