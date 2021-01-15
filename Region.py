@@ -27,21 +27,13 @@ class Region(ObjectGrid2D):
 
         self.SEIR_gamma = 1 / recovery_period
         self.start_epi_locations = 1
-        self.start_epi_population = 0.5
-
-        # matrix of patches
-        # patch object has been manipulated to reverse the indexing of [y][x]
-        # temp_patches = [[patch.Patch(y, x) for x in range(xsize)] for y in range(ysize)]
+        self.start_epi_population = 0.1
 
         self.patches = np.zeros(shape=(xsize, ysize), dtype=object)
 
         for x in range(xsize):
             for y in range(ysize):
                 self.patches[x][y] = patch.Patch(x, y)
-
-        # patchesList = [[patch.Patch(x, y) for x in range(xsize)] for y in range(ysize)]
-        # self.patches = np.array(patchesList)
-
 
         self.rows = len(self.patches)
         self.columns = len(self.patches[0])
@@ -56,14 +48,10 @@ class Region(ObjectGrid2D):
             for y in range(self.columns):
                 patch_populations_matrix[x][y] = self.patches[x][y].number_of_agents_at_patch()
 
-        # calculating the index of the 5 patches with the most number of agents
-        #patch_populations_matrix = [[self.patches[x][y].number_of_agents_at_patch() for x in range(self.rows)] for y in range(self.columns)]
-
         print("[65, 62] in numpy: {0}", patch_populations_matrix[65][62])
         print("[62, 65] in numpy: {0}", patch_populations_matrix[62][65])
 
         patch_populations_matrix_numpy = np.array(patch_populations_matrix)
-        # np.savetxt("np.txt", patch_populations_matrix_numpy)
 
         print("[65, 62] in numpy: {0}", patch_populations_matrix_numpy[65, 62])
         print("[62, 65] in numpy: {0}", patch_populations_matrix_numpy[62, 65])
@@ -73,8 +61,6 @@ class Region(ObjectGrid2D):
         row_indices, col_indices = np.unravel_index(flat_indices, patch_populations_matrix_numpy.shape)
 
         for j in range(n):
-            #print("[
-            # {0},{1}], pop:{2}".format(col_indices[j], row_indices[j]), self.patches[col_indices[j]][row_indices[j]].number_of_agents_at_patch())
             print(row_indices[j], col_indices[j], " ", end='')
             print(self.patches[row_indices[j]][col_indices[j]].number_of_agents_at_patch(), " ", end='')
 
@@ -84,35 +70,17 @@ class Region(ObjectGrid2D):
         indices = np.where(a == a.max())
         print(indices)
 
-        # print(random.randint(0, 4))
         i = random.randint(0, 4)
         self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
                                                                                      col_indices[
                                                                                          i]].number_of_agents_at_patch())
 
-        # for i in range(n):
-        #     print(self.patches[col_indices[i]][row_indices[i]].number_of_agents_at_patch())
-        #     self.patches[col_indices[i]][row_indices[i]].set_infectious_agents_setup(self.start_epi_population
-        #                                                                                  * self.patches[col_indices[i]][row_indices[i]].number_of_agents_at_patch())
-
-        # for i in range(n):
-        #     print(self.patches[row_indices[i]][col_indices[i]].number_of_agents_at_patch())
-
-
-        # randomly add the infected number to the grid
-
-        # for x in range(self.global_num_infected):
-        #     randomX = self.random_xposition_within_grid(model)
-        #     randomY = self.random_yposition_within_grid(model)
-        #     self.patches[randomX][randomY].increment_infectious_agents_setup()
-        # print(self.global_population)
-
+        # susceptible = patch population - number of infected
         self.patches[row_indices[i]][col_indices[i]].num_susceptible = self.patches[row_indices[i]][
                                                                            col_indices[i]].population - \
                                                                        self.patches[row_indices[i]][
                                                                            col_indices[i]].num_infected
-        # self.global_num_susceptible = self.global_population - self.global_num_infected
 
     # this function will only be called once
     # increments global population and num susceptible to assist reporting
@@ -139,6 +107,12 @@ class Region(ObjectGrid2D):
     def return_SEIR_variables(self):
         return self.global_num_susceptible, self.global_num_exposed, self.global_num_infected, self.global_num_immune
 
+    def return_num_incidence(self):
+        return self.global_num_incidence / self.global_population
+
+    def return_prevalence(self):
+        return self.global_num_infected / self.global_population
+
     def reset_SEIR_variables(self):
         self.global_num_susceptible = 0
         self.global_num_exposed = 0
@@ -146,14 +120,12 @@ class Region(ObjectGrid2D):
         self.global_num_immune = 0
 
     def update_global_variables_from_given_patch(self, x, y):
-        # if (self.patches[x][y].num_infected != 0):
-        #     print("TEST {0},{1}".format(x, y))
-
-
         self.global_num_susceptible += self.patches[x][y].num_susceptible
         self.global_num_exposed += self.patches[x][y].num_exposed
         self.global_num_infected += self.patches[x][y].num_infected
         self.global_num_immune += self.patches[x][y].num_immune
+
+        self.global_num_incidence += self.patches[x][y].num_incidence
 
     def random_xposition_within_grid(self, model):
         xlimit = model.environments["agent_env"].xsize - 1
@@ -165,17 +137,17 @@ class Region(ObjectGrid2D):
 
 
     # WILL PRINT OUT MATRIX WITH AXIS
-    # ------------------------------> (y) ROWS
+    # ------------------------------> (y) COLUMNS
     # | (0,0) (0,1) (0,2) (0,3) (0,4) ...
     # | (1,0) (1,1) (1,2) (1,3) (1,4) ...
     # | (2,0) ...........................
     # | (3,0) ...........................
     # | (4,0) ...........................
     # (x) .................................
-    # COLUMNS
+    # ROWS
     def print_out_region_patches(self):
-        for x in range(self.columns):
-            for y in range(self.rows):
+        for x in range(self.rows):
+            for y in range(self.columns):
                 print("[",self.patches[x][y].number_of_agents_at_patch(),"]", end="")
                 if y == (self.columns - 1):
                     print(" ")
@@ -184,9 +156,7 @@ class RegionSteppable(Steppable):
 
     def __init__(self, model):
         super(Steppable, self).__init__()
-        self.model = model
-
-        self.model.environments["agent_env"].setup_infection(model)
+        model.environments["agent_env"].setup_infection(model)
 
     def step_main(self, model):
         global_num_infected = model.environments["agent_env"].return_global_num_infected()
@@ -194,8 +164,6 @@ class RegionSteppable(Steppable):
         beta_lambda_gamma = model.environments["agent_env"].return_beta_lambda_gamma()
         travel_rate_travel_short = model.environments["agent_env"].return_travel_rate_travel_short()
         patches = model.environments["agent_env"].patches
-        rows = len(patches)
-        columns = len(patches[0])
 
         # need to rest global variables before counting them again
         model.environments["agent_env"].reset_SEIR_variables()
@@ -234,16 +202,13 @@ class RegionSteppable(Steppable):
 
         for currentPatch in model.environments["agent_env"].live_patches:
             patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0])
-                # if(patch_new_cases_made != 0):
-                #     print("New cases made at [{0},{1}]".format(x, y))
-
             new_cases_made += patch_new_cases_made
 
         for currentPatch in model.environments["agent_env"].live_patches:
             patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0], travel_rate_travel_short[1])
 
         migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
-        print(migrate_infections)
+        print("MIGRATE INFECTIONS:", migrate_infections)
 
         for currentPatch in model.environments["agent_env"].live_patches:
             patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population)

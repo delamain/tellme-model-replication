@@ -15,7 +15,6 @@ import Patch as patch
 class InfectionAgent(Agent):
 
     def __init__(self, model, xpos, ypos):
-        # super(InfectionAgent, self).__init__()
         self.environment_positions = dict()
         self.x_coord = xpos
         self.y_coord = ypos
@@ -74,9 +73,7 @@ gisData = LoadGISData.LoadGISData("popn_density_uk_2015.asc")
 xsize = ysize = gisData.return_grid_size()
 population = gisData.return_population("UK")
 
-# xsize = ysize = 5
-# population = 1000
-
+# model constructor (number of iterations)
 model = Model(75)
 R0 = 3
 recovery_period = 5
@@ -84,11 +81,6 @@ latency_period = 1
 
 # Creating the grid automatically binds it to the model
 region = Region.Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
-
-# adding all the agents within the population to the model
-# for x in range(0, population):
-#     agents.append(InfectionAgent(model))
-#     model.schedule.agents.add(agents[x])
 
 ascii_grid = gisData.return_ascii_grid()
 NODATA_value = gisData.return_NODATA_value()
@@ -105,7 +97,7 @@ print("Sum of population, with patches with a popn > 0:", sum_popn_of_patches_wi
 count = 0
 
 print("DOES THIS PRINT", ascii_grid.max() * factor)
-        #print(np.argmax(patch_populations_matrix_numpy))
+#print(np.argmax(patch_populations_matrix_numpy))
 a = ascii_grid  # Can be of any shape
 indices = np.where(a == a.max())
 print(indices)
@@ -115,23 +107,6 @@ print("[62, 65] in ascii: {0}", ascii_grid[62][65])
 
 demoPatches = [[patch.Patch(x, y) for x in range(xsize)] for y in range(ysize)]
 numpyArrayPatches = np.array(demoPatches)
-
-# for x in range(rows):
-#     for y in range(columns):
-#         if (ascii_grid[x, y] != -9999):
-#             demoPatches[x][y].population = round((ascii_grid[x, y]) * factor)
-#
-#             for populationCount in range(0, demoPatches[x][y].population):
-#                 demoPatches[x][y].agents.append(InfectionAgent(model, x, y))
-#
-#
-#
-# print("[65, 62] in demoPatches: {0}", demoPatches[65][62].population)
-# print("[62, 65] in demoPatches: {0}", demoPatches[62][65].population)
-#
-# print("[65, 62].agentcount in demoPatches: {0}", len(demoPatches[65][62].agents))
-# print("[62, 65].agentcount in demoPatches: {0}", len(demoPatches[62][65].agents))
-# exit()
 
 agentsToBeAddedToSet = []
 
@@ -149,29 +124,12 @@ for x in range(rows):
             for individualAgent in range(0, region.patches[x][y].population):
                 region.patches[x][y].agents.append(InfectionAgent(model, x, y))
 
-
             # add the agents to the schedule
             for individualPatchAgent in region.patches[x][y].agents:
                 model.schedule.agents.add(individualPatchAgent)
 
         else:
             pass
-
-# model.schedule.agents.add(agentsToBeAddedToSet)
-
-print(len(region.live_patches))
-
-if region.patches[25][30] in region.live_patches:
-    print(region.patches[25][30].population)
-    print("TRUE")
-
-# print(region.live_patches.)
-
-
-
-print("[23, 30] in patches post for: {0}", region.patches[23][30].population)
-print("[62, 65] in patches post for: {0}", region.patches[62][65].population)
-
 
 regionSteppableModel = Region.RegionSteppable(model)
 displayModel = DisplayModel.DisplayModel(model)

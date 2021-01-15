@@ -66,7 +66,8 @@ class Patch(Steppable):
         if (self.population != 0):
             self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
             # if (self.new_cases_made != 0):
-            #     print("PATCH FINDING SELF VALUES [{0},{1}]".format(self.x, self.y))
+            #     tempVar = self.num_susceptible / self.population
+            #     print("sus / pop: {0}".format((tempVar)))
         else:
             self.new_cases_made = 0
 

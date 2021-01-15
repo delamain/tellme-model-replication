@@ -10,16 +10,13 @@ class LoadGISData:
         self.xllcorner = linecache.getline(popn_density_file, 3)
         self.yllcorner = linecache.getline(popn_density_file, 4)
         self.cellsize = linecache.getline(popn_density_file, 5)
-        self.NODATA_value = linecache.getline(popn_density_file, 6)
 
-        # self.NODATA_value = self.NODATA_value.lstrip('-').isdigit()
-        #
-        #
-        # self.NODATA_value = self.NODATA_value.astype(np.float)
+        # TBC - manipulating this string to dynamically read NODATA_value#
+        # self.NODATA_value = linecache.getline(popn_density_file, 6)
+
         self.NODATA_value = np.float64(-9999)
 
         self.ascii_grid = np.loadtxt(popn_density_file, skiprows=6)
-
 
         self.ascii_grid = self.resample_ascii_grid(self.ascii_grid)
         self.rows = self.ascii_grid.shape[0]
