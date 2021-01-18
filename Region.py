@@ -48,29 +48,28 @@ class Region(ObjectGrid2D):
             for y in range(self.columns):
                 patch_populations_matrix[x][y] = self.patches[x][y].number_of_agents_at_patch()
 
-        print("[65, 62] in numpy: {0}", patch_populations_matrix[65][62])
-        print("[62, 65] in numpy: {0}", patch_populations_matrix[62][65])
-
         patch_populations_matrix_numpy = np.array(patch_populations_matrix)
 
-        print("[65, 62] in numpy: {0}", patch_populations_matrix_numpy[65, 62])
-        print("[62, 65] in numpy: {0}", patch_populations_matrix_numpy[62, 65])
-
+        # finding the indexes of the 5 largest population elements within the matrix
         n = 5
         flat_indices = np.argpartition(patch_populations_matrix_numpy.ravel(), -n)[-n:]
         row_indices, col_indices = np.unravel_index(flat_indices, patch_populations_matrix_numpy.shape)
 
+        # printing the maximum five elements and their indices
         for j in range(n):
             print(row_indices[j], col_indices[j], " ", end='')
             print(self.patches[row_indices[j]][col_indices[j]].number_of_agents_at_patch(), " ", end='')
 
-        print("\nDOES THIS PRINT", patch_populations_matrix_numpy.max())
+        print("\nMaximum element value: ", patch_populations_matrix_numpy.max())
         #print(np.argmax(patch_populations_matrix_numpy))
         a = patch_populations_matrix_numpy  # Can be of any shape
         indices = np.where(a == a.max())
-        print(indices)
+        print("Indices where maximum element value is found at:", indices)
 
+        # selecting a random element from the top 5 largest
         i = random.randint(0, 4)
+
+        # setting the infectious number of agents at that individual starting patch
         self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
                                                                                      col_indices[
@@ -158,8 +157,18 @@ class RegionSteppable(Steppable):
         super(Steppable, self).__init__()
         model.environments["agent_env"].setup_infection(model)
 
+    def step_prologue(self, model):
+        SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
+
+        total_people = SEIR_variables[0] + SEIR_variables[1] + SEIR_variables[2] + SEIR_variables[3]
+
+        print(
+            "S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2],
+                                                                SEIR_variables[3]))
+
+        print("TOTAL: {0}".format(round(total_people)))
+
     def step_main(self, model):
-        global_num_infected = model.environments["agent_env"].return_global_num_infected()
         global_population = model.environments["agent_env"].return_global_population()
         beta_lambda_gamma = model.environments["agent_env"].return_beta_lambda_gamma()
         travel_rate_travel_short = model.environments["agent_env"].return_travel_rate_travel_short()
@@ -167,12 +176,6 @@ class RegionSteppable(Steppable):
 
         # need to rest global variables before counting them again
         model.environments["agent_env"].reset_SEIR_variables()
-
-        # for x in range(rows):
-        #     for y in range(columns):
-        #         patch.Patch.make_infections(patches[x][y], model, global_num_infected, beta_lambda_gamma[0], travel_rate_travel_short[0], travel_rate_travel_short[1])
-        #         patch.Patch.update_SEIR_patches(patches[x][y], beta_lambda_gamma[2], beta_lambda_gamma[1])
-        #         model.environments["agent_env"].update_global_variables_from_given_patch(x, y)
 
         new_cases_made = 0
 
@@ -200,6 +203,7 @@ class RegionSteppable(Steppable):
         #         patch.Patch.update_SEIR_patches(patches[x][y], beta_lambda_gamma[2], beta_lambda_gamma[1])
         #         model.environments["agent_env"].update_global_variables_from_given_patch(x, y)
 
+        # TBC - need to implement random set accessing (utilising shuffle)
         for currentPatch in model.environments["agent_env"].live_patches:
             patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0])
             new_cases_made += patch_new_cases_made
@@ -208,7 +212,6 @@ class RegionSteppable(Steppable):
             patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0], travel_rate_travel_short[1])
 
         migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
-        print("MIGRATE INFECTIONS:", migrate_infections)
 
         for currentPatch in model.environments["agent_env"].live_patches:
             patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population)

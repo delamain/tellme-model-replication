@@ -74,8 +74,8 @@ xsize = ysize = gisData.return_grid_size()
 population = gisData.return_population("UK")
 
 # model constructor (number of iterations)
-model = Model(75)
-R0 = 3
+model = Model(50)
+R0 = 2
 recovery_period = 5
 latency_period = 1
 
@@ -101,9 +101,6 @@ print("DOES THIS PRINT", ascii_grid.max() * factor)
 a = ascii_grid  # Can be of any shape
 indices = np.where(a == a.max())
 print(indices)
-
-print("[65, 62] in ascii: {0}", ascii_grid[65][62])
-print("[62, 65] in ascii: {0}", ascii_grid[62][65])
 
 demoPatches = [[patch.Patch(x, y) for x in range(xsize)] for y in range(ysize)]
 numpyArrayPatches = np.array(demoPatches)
