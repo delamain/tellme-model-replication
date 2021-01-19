@@ -1,83 +1,17 @@
-"""
-A simple model which introduces the use of an ObjectGrid Environment to hold
-an agent and a numerical environment to hold values. The agent moves through
-the environment and reads off values.
-"""
-from panaxea.core.Environment import ObjectGrid, ObjectGrid2D, NumericalGrid2D, Grid2D
 from panaxea.core.Model import Model
-from panaxea.core.Steppables import Agent, Helper
-import Region
-import DisplayModel
-import LoadGISData
+import Region, DisplayModel, LoadGISData, InfectionAgent
 import numpy as np
 import Patch as patch
-
-class InfectionAgent(Agent):
-
-    def __init__(self, model, xpos, ypos):
-        self.environment_positions = dict()
-        self.x_coord = xpos
-        self.y_coord = ypos
-        self.susceptible = True
-        self.exposed = False
-        self.infected = False
-        self.immune = False
-
-        # randomX = model.environments["agent_env"].random_xposition_within_grid(model)
-        # randomY = model.environments["agent_env"].random_yposition_within_grid(model)
-
-        # automatically adds agent to the environment
-        self.add_agent_to_grid("agent_env", (xpos, ypos), model)
-        model.environments["agent_env"].add_agent_to_patch(xpos, ypos)
-
-        self.end_of_grid = False
-
-    # def __move_to_next_position(self, model):
-    #
-    #     current_position = self.environment_positions["agent_env"]
-    #
-    #     xlimit = model.environments["agent_env"].xsize - 1
-    #     ylimit = model.environments["agent_env"].ysize - 1
-    #
-    #     # return a shuffled random list of the adjacent positions
-    #     adjacentPositions = Region.Region.get_moore_neighbourhood(model.environments["agent_env"], current_position, True)
-    #
-    #     # if it is a valid position to move to
-    #     if (model.environments["agent_env"].valid_position(adjacentPositions[0])):
-    #         new_position = adjacentPositions[0]
-    #
-    #     # before moving, need to update the number of agents at that patch
-    #     #model.environments["agent_env"].remove_agent_from_patch(new_position[0], new_position[1])
-    #     #model.environments["agent_env"].add_agent_to_patch(new_position[0], new_position[1])
-    #     self.move_agent("agent_env", new_position, model)
-
-    def set_agent_exposed(self):
-        self.susceptible = False
-        self.exposed = True
-
-    def set_agent_infected(self):
-        self.susceptible = False
-        self.exposed = False
-        self.infected = True
-
-    def set_agent_recovered(self):
-        self.exposed = False
-        self.infected = False
-        self.immune = True
-
-    def check_agent_not_exposed_not_infected_not_immune(self):
-        if (self.exposed or self.infected or self.immune == True):
-            return False
 
 gisData = LoadGISData.LoadGISData("popn_density_uk_2015.asc")
 xsize = ysize = gisData.return_grid_size()
 population = gisData.return_population("UK")
 
 # model constructor (number of iterations)
-model = Model(50)
+model = Model(150)
 R0 = 2
 recovery_period = 5
-latency_period = 1
+latency_period = 0
 
 # Creating the grid automatically binds it to the model
 region = Region.Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
@@ -119,7 +53,7 @@ for x in range(rows):
 
             # add all the agents to the patches
             for individualAgent in range(0, region.patches[x][y].population):
-                region.patches[x][y].agents.append(InfectionAgent(model, x, y))
+                region.patches[x][y].agents.append(InfectionAgent.InfectionAgent(model, x, y))
 
             # add the agents to the schedule
             for individualPatchAgent in region.patches[x][y].agents:
