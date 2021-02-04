@@ -1,8 +1,8 @@
 import numpy as np
-from panaxea.core.Environment import ObjectGrid, ObjectGrid2D, NumericalGrid2D, Grid2D
-from panaxea.core.Steppables import Steppable, Helper
-import Patch as patch
+from panaxea.core.Environment import ObjectGrid2D
+from panaxea.core.Steppables import Steppable
 import random
+import Patch
 
 class Region(ObjectGrid2D):
 
@@ -20,20 +20,24 @@ class Region(ObjectGrid2D):
 
         self.SEIR_beta = R0 / recovery_period
 
+        self.incidence_count_flag = 0
+        self.susceptible_count_flag = 0
+
         if (latency_period == 0):
             self.SEIR_lambda =  0
         else:
-            self.SEIR_lambda = 1 / latency_period
+            self.SEIR_lambda = 1.0 / latency_period
 
-        self.SEIR_gamma = 1 / recovery_period
+        self.SEIR_gamma = 1.0 / recovery_period
         self.start_epi_locations = 1
-        self.start_epi_population = 0.1
+        self.start_epi_population = 0.001
 
         self.patches = np.zeros(shape=(xsize, ysize), dtype=object)
+        self.visualised_patches = np.zeros([xsize, ysize, 3], dtype=np.uint8)
 
         for x in range(xsize):
             for y in range(ysize):
-                self.patches[x][y] = patch.Patch(x, y)
+                self.patches[x][y] = Patch.Patch(x, y)
 
         self.rows = len(self.patches)
         self.columns = len(self.patches[0])
@@ -70,6 +74,11 @@ class Region(ObjectGrid2D):
         i = random.randint(0, 4)
 
         # setting the infectious number of agents at that individual starting patch
+        print("START POP, ", self.start_epi_population
+                                                                                 * self.patches[row_indices[i]][
+                                                                                     col_indices[
+                                                                                         i]].number_of_agents_at_patch())
+
         self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
                                                                                      col_indices[
@@ -108,6 +117,9 @@ class Region(ObjectGrid2D):
 
     def return_num_incidence(self):
         return self.global_num_incidence / self.global_population
+
+    def return_global_num_incidence(self):
+        return self.global_num_incidence
 
     def return_prevalence(self):
         return self.global_num_infected / self.global_population
@@ -159,12 +171,14 @@ class RegionSteppable(Steppable):
 
     def step_prologue(self, model):
         SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
+        global_incidence = model.environments["agent_env"].return_global_num_incidence()
 
         total_people = SEIR_variables[0] + SEIR_variables[1] + SEIR_variables[2] + SEIR_variables[3]
 
         print(
             "S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2],
                                                                 SEIR_variables[3]))
+        print("GLOBAL INCIDENCE: ", global_incidence)
 
         print("TOTAL: {0}".format(round(total_people)))
 
@@ -204,32 +218,44 @@ class RegionSteppable(Steppable):
         #         model.environments["agent_env"].update_global_variables_from_given_patch(x, y)
 
         # TBC - need to implement random set accessing (utilising shuffle)
-        for currentPatch in model.environments["agent_env"].live_patches:
-            patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0])
+
+        live_patches_list = list(model.environments["agent_env"].live_patches)
+        random.shuffle(live_patches_list)
+        for currentPatch in live_patches_list:
+            patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0])
             new_cases_made += patch_new_cases_made
 
-        for currentPatch in model.environments["agent_env"].live_patches:
-            patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0], travel_rate_travel_short[1])
+        for currentPatch in live_patches_list:
+            Patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0], travel_rate_travel_short[1])
 
         migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
 
-        for currentPatch in model.environments["agent_env"].live_patches:
-            patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population)
+        self.count_of_patches_with_incidence_greater_than_susceptible = 0
 
-        for currentPatch in model.environments["agent_env"].live_patches:
-            patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1])
+        for currentPatch in live_patches_list:
+            self.count_of_patches_with_incidence_greater_than_susceptible = Patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population, self.count_of_patches_with_incidence_greater_than_susceptible)
+            model.environments["agent_env"].global_num_incidence += currentPatch.num_incidence
+
+        if (model.environments["agent_env"].global_num_incidence < 1):
+            exit()
+
+        print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ", self.count_of_patches_with_incidence_greater_than_susceptible)
+
+
+        for currentPatch in live_patches_list:
+            Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1])
             model.environments["agent_env"].update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
 
     def step_epilogue(self, model):
         agent_env = model.environments["agent_env"]
         #model.environments["agent_env"].print_out_region_patches()
 
-        SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
-
-        total_people = SEIR_variables[0] + SEIR_variables[1] + SEIR_variables[2] + SEIR_variables[3]
-
-        print("S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2], SEIR_variables[3]))
-
-        print("TOTAL: {0}".format(round(total_people)))
+        # SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
+        #
+        # total_people = SEIR_variables[0] + SEIR_variables[1] + SEIR_variables[2] + SEIR_variables[3]
+        #
+        # print("S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2], SEIR_variables[3]))
+        #
+        # print("TOTAL: {0}".format(round(total_people)))
 
 

@@ -1,6 +1,5 @@
 import numpy as np
 import linecache
-import scipy
 import cv2
 
 class LoadGISData:
@@ -30,7 +29,17 @@ class LoadGISData:
             print("Sizes do not match")
 
     def return_population(self, country):
-        if (country == "UK"):
+        if (country == "Austria"):
+            return 8.6
+        elif (country == "Belgium"):
+            return 11.2
+        elif (country == "Bulgaria"):
+            return 7.1
+        elif (country == "Croatia"):
+            return 4.26
+        elif (country == "Cyprus"):
+            return 1.16
+        elif (country == "UK"):
             return 64
 
     def return_NODATA_value(self):
