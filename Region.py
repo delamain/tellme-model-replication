@@ -193,32 +193,6 @@ class RegionSteppable(Steppable):
 
         new_cases_made = 0
 
-        # for x in range(rows):
-        #     for y in range(columns):
-        #         patch_new_cases_made = patch.Patch.make_infections_first_patch_self_generated(patches[x][y], beta_lambda_gamma[0])
-        #         # if(patch_new_cases_made != 0):
-        #         #     print("New cases made at [{0},{1}]".format(x, y))
-        #
-        #         new_cases_made += patch_new_cases_made
-        #
-        # for x in range(rows):
-        #     for y in range(columns):
-        #         patch.Patch.make_infections_second_patch_travelling(patches[x][y], model, travel_rate_travel_short[0], travel_rate_travel_short[1])
-        #
-        # migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
-        # print(migrate_infections)
-        #
-        # for x in range(rows):
-        #     for y in range(columns):
-        #         patch.Patch.make_infections_third_calculate_incidence(patches[x][y], travel_rate_travel_short[0], migrate_infections, global_population)
-        #
-        # for x in range(rows):
-        #     for y in range(columns):
-        #         patch.Patch.update_SEIR_patches(patches[x][y], beta_lambda_gamma[2], beta_lambda_gamma[1])
-        #         model.environments["agent_env"].update_global_variables_from_given_patch(x, y)
-
-        # TBC - need to implement random set accessing (utilising shuffle)
-
         live_patches_list = list(model.environments["agent_env"].live_patches)
         random.shuffle(live_patches_list)
         for currentPatch in live_patches_list:

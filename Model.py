@@ -4,13 +4,14 @@ import LoadGISData
 import Region
 import DisplayModel
 import numpy as np
+import cv2
 
 gisData = LoadGISData.LoadGISData("popn_density_uk_2015.asc")
 xsize = ysize = gisData.return_grid_size()
 population = gisData.return_population("UK")
 
 # model constructor (number of iterations)
-model = Model(5)
+model = Model(200)
 R0 = 2
 recovery_period = 5.0
 latency_period = 0
@@ -70,11 +71,9 @@ model.schedule.helpers.append(regionSteppableModel)
 
 DisplayModel.DisplayModel.color_patches_setup(displayModel, region, population_total)
 
-for x in range(region.rows):
-    for y in range(region.columns):
-        region.visualised_patches[x][y] = region.patches[x][y].color
-
-
+for xx in range(region.rows):
+    for yy in range(region.columns):
+        region.visualised_patches[xx][yy] = region.patches[xx][yy].color
 
 DisplayModel.DisplayModel.display_graphical_matrix(displayModel, region.visualised_patches)
 
