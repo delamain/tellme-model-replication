@@ -129,6 +129,7 @@ class Region(ObjectGrid2D):
         self.global_num_exposed = 0
         self.global_num_infected = 0
         self.global_num_immune = 0
+        self.global_num_incidence = 0
 
     def update_global_variables_from_given_patch(self, x, y):
         self.global_num_susceptible += self.patches[x][y].num_susceptible
@@ -193,8 +194,9 @@ class RegionSteppable(Steppable):
 
         new_cases_made = 0
 
-        live_patches_list = list(model.environments["agent_env"].live_patches)
-        random.shuffle(live_patches_list)
+        live_patches_list = model.environments["agent_env"].live_patches
+        # live_patches_list = list(model.environments["agent_env"].live_patches)
+        # random.shuffle(live_patches_list)
         for currentPatch in live_patches_list:
             patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0])
             new_cases_made += patch_new_cases_made
@@ -210,8 +212,8 @@ class RegionSteppable(Steppable):
             self.count_of_patches_with_incidence_greater_than_susceptible = Patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population, self.count_of_patches_with_incidence_greater_than_susceptible)
             model.environments["agent_env"].global_num_incidence += currentPatch.num_incidence
 
-        if (model.environments["agent_env"].global_num_incidence < 1):
-            exit()
+        # if (model.environments["agent_env"].global_num_incidence < 1):
+        #     exit()
 
         print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ", self.count_of_patches_with_incidence_greater_than_susceptible)
 
