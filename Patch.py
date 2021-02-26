@@ -87,9 +87,12 @@ class Patch(Steppable):
                 neighbour[1]] in model.environments["agent_env"].live_patches):
 
                 individual_neighbour_population = model.environments["agent_env"].patches[neighbour[0]][
-                    neighbour[1]].number_of_agents_at_patch()
+                    neighbour[1]].population
 
                 nbr_popn += individual_neighbour_population
+
+            # if (nbr_popn == 0):
+            #     print("NEIGHBOUR POPULATION IS ZERO at", self.x, self.y)
 
         for neighbour in neighbours:
             if (model.environments["agent_env"].patches[neighbour[0]][

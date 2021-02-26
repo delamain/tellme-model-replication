@@ -14,7 +14,7 @@ population = gisData.return_population("UK")
 model = Model(200)
 R0 = 2
 recovery_period = 5.0
-latency_period = 0
+latency_period = 1.0
 
 # Creating the grid automatically binds it to the model
 region = Region.Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
@@ -23,9 +23,6 @@ ascii_grid = gisData.return_ascii_grid()
 NODATA_value = gisData.return_NODATA_value()
 rows = ascii_grid.shape[0]
 columns = ascii_grid.shape[1]
-
-# this to scale the model accordingly, so hard coded values are the same across the model
-model_size_scalar = 1000/1000000
 
 population_total = 0
 count_of_pop_non_zero_squares = gisData.return_count_of_non_zero_patches()
@@ -79,5 +76,5 @@ DisplayModel.DisplayModel.display_graphical_matrix(displayModel, region.visualis
 
 model.run()
 
-# DisplayModel.DisplayModel.display_result(displayModel)
 DisplayModel.DisplayModel.create_video_from_images(displayModel)
+DisplayModel.DisplayModel.display_result(displayModel)
