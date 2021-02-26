@@ -16,6 +16,8 @@ R0 = 2
 recovery_period = 5.0
 latency_period = 1.0
 
+# test abm implementation branch
+
 # Creating the grid automatically binds it to the model
 region = Region.Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
 
