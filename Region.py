@@ -1,6 +1,7 @@
 import numpy as np
 from panaxea.core.Environment import ObjectGrid2D
 from panaxea.core.Steppables import Steppable
+import math
 import random
 import Patch
 
@@ -9,6 +10,9 @@ class Region(ObjectGrid2D):
     # setup_fixed_globals
     def __init__(self, name, xsize, ysize, model, R0, recovery_period, latency_period):
         super(Region, self).__init__(name, xsize, ysize, model)
+
+        # infection tracking variables
+        ##############################
         self.global_num_susceptible = 0
         self.global_num_infected = 0
         self.global_num_exposed = 0
@@ -17,9 +21,7 @@ class Region(ObjectGrid2D):
         self.global_population = 0
         self.travel_rate = 0.25
         self.travel_short = 0.6
-
         self.SEIR_beta = R0 / recovery_period
-
         self.incidence_count_flag = 0
         self.susceptible_count_flag = 0
 
@@ -43,6 +45,46 @@ class Region(ObjectGrid2D):
         self.columns = len(self.patches[0])
 
         self.live_patches = set([])
+
+        # default values for behaviour
+        self.see_distance = 3
+        self.prop_social_media = 0.7
+        self.prop_in_target = 0.1
+        self.popn_hcw = 10
+
+        self.incidence_discount = 0.14
+        self.worry_relative = 1
+        self.attitude_weight_V = 0.3
+        self.norms_weight_v = 0.15
+        self.protectV_threshold = 0.3
+        self.attitude_weight_NV = 0.35
+        self.norms_weight_NV = 0.1
+        self.protectNV_threshold = 0.25
+
+        self.efficacy_vaccine = 0.7
+        self.efficacy_protect = 0.25
+
+        self.prop_antivax = 0.1
+        self.in_target_attitude = 0.1
+
+        self.risk_weight_v = 1 - self.attitude_weight_V - self.norms_weight_v
+        self.risk_weight_nv = 1 - self.attitude_weight_NV - self.norms_weight_NV
+
+        self.restrict_vaccine = True
+        self.vaccine_available = False
+        self.vaccinate_who = False
+
+        self.popn_dataset = None
+        self.GISevn = None
+        self.total_popn = None
+        self.max_popn = None
+        # self.live_patches
+        self.when_before = None
+        self.start_tick = None
+        self.epidemic_declared = False
+        self.start_si_tick = None
+
+
 
     def setup_infection(self, model):
 
@@ -89,6 +131,7 @@ class Region(ObjectGrid2D):
                                                                            col_indices[i]].population - \
                                                                        self.patches[row_indices[i]][
                                                                            col_indices[i]].num_infected
+
 
     # this function will only be called once
     # increments global population and num susceptible to assist reporting
@@ -147,6 +190,45 @@ class Region(ObjectGrid2D):
         ylimit = model.environments["agent_env"].ysize - 1
         return random.randint(0, ylimit)
 
+    def triangular0to1(self, MM, UU):
+        if (UU < MM):
+            return math.sqrt(UU * MM)
+        else:
+            1 - math.sqrt((1 - UU) * (1 - MM))
+
+    def make_reps(self, model):
+        for currentPatch in self.live_patches:
+            currentPatch.make_reps()
+
+
+
+    def revise_behaviour(self):
+        for currentPatch in self.live_patches:
+            count_behave_vaccinate = 0
+
+            for agent in currentPatch.agents:
+
+                if (agent.behave_vaccinate == True):
+                    count_behave_vaccinate += 1
+
+            currentPatch.normsV = count_behave_vaccinate / currentPatch.agents
+
+        for currentPatch in self.live_patches:
+            for agent in currentPatch.agents:
+
+                agent.behaviourV_value = self.attitude_weight_V * agent.attitudeV_current \
+                                   + self.norms_weight_v * currentPatch.normsV # + self.risk_weight_V * salient_riskV
+                agent.behaviourNV_value = self.attitude_weight_NV * agent.attitudeNV_current \
+                                   + self.norms_weight_v * currentPatch.normsV  # + self.risk_weight_V * salient_riskV
+
+                # normsV-change
+
+                if (agent.behave_vaccinate == False and agent.behaviourV_value > self.protectV_threshold):
+                    agent.seek_vaccination(self)
+
+
+
+
 
     # WILL PRINT OUT MATRIX WITH AXIS
     # ------------------------------> (y) COLUMNS
@@ -169,6 +251,7 @@ class RegionSteppable(Steppable):
     def __init__(self, model):
         super(Steppable, self).__init__()
         model.environments["agent_env"].setup_infection(model)
+        model.environments["agent_env"].make_reps(model)
 
     def step_prologue(self, model):
         SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
@@ -221,6 +304,15 @@ class RegionSteppable(Steppable):
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1])
             model.environments["agent_env"].update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
+
+        for currentPatch in live_patches_list:
+            Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
+
+        for currentPatch in live_patches_list:
+            Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
+
+
+
 
     def step_epilogue(self, model):
         agent_env = model.environments["agent_env"]

@@ -1,5 +1,7 @@
 from panaxea.core.Steppables import Steppable
 from random import shuffle, random
+import Reps
+import random
 
 
 class Patch(Steppable):
@@ -7,20 +9,36 @@ class Patch(Steppable):
     def __init__(self, xcoord, ycoord):
         self.x = xcoord
         self.y = ycoord
-        self.num_travel_incases = 0
-        self.num_susceptible = 0
-        self.num_infected = 0
-        self.cumulative_infected = 0
-        self.num_exposed = 0
-        self.num_immune = 0
-        self.num_incidence = 0 # population to be converted to exposed
-        self.population = 0
+
+        # epidemic model operations
         self.beta_local = 0
         self.new_cases_made = 0
-        self.selfisolation_ticks = 0
-        self.agents = []
+        self.num_susceptible = 0
+        self.num_infected = 0
+        self.num_exposed = 0
+        self.num_incidence = 0  # population to be converted to exposed
+        self.num_travel_incases = 0
+        self.num_immune = 0
+
+        # accessed by people on patch for behaviour
+        self.visible_patches = None
+        self.normsV = None
+        self.normsNV = None
+        self.cumulative_incidence = None
+        self.patch_risk = None
+
+
+        # my own implementation variables
+        self.cumulative_infected = 0
+        self.population = 0
         self.within_border = False
         self.color = 0
+        self.reps_own = Reps.Reps()
+        self.agents = []
+
+
+        self.selfisolation_ticks = 0
+
 
     def increment_patch_agents(self):
         self.num_susceptible += 1
@@ -34,6 +52,28 @@ class Patch(Steppable):
 
         for agentToBeInfected in range(0, int(round(self.num_infected))):
             self.agents[agentToBeInfected].set_agent_infected()
+
+    def make_reps(self):
+        self.reps_own.ave_attitudeV = 0
+        self.reps_own.max_attitudeV = 0
+        self.reps_own.min_attitudeV = 0
+        self.reps_own.prop_protect_patch = 0
+
+        for agent in self.agents:
+            if (agent.behave_protect == True):
+                self.reps_own.prop_protect_patch += 1
+
+        print(self.reps_own.prop_protect_patch)
+
+    def revise_behaviour(self):
+        count_behave_vaccinate = 0
+
+        for agent in self.agents:
+
+            if (agent.behave_vaccinate == True):
+                count_behave_vaccinate += 1
+
+        normsV = count_behave_vaccinate / self.agents
 
     def number_of_agents_at_patch(self):
         return self.population
@@ -155,13 +195,29 @@ class Patch(Steppable):
         if ((self.num_susceptible or self.num_exposed or self.num_infected or self.num_immune) < 0):
             print("ERROR", self.x, self.y)
 
-    def update_SEIR_persons(self, SEIR_lambda):
+    def update_SEIR_persons_first(self, SEIR_lambda, SEIR_gamma):
         for agent in self.agents:
-            if (agent.check_agent_not_exposed_not_infected_not_immune == False):
+            if (agent.infected == True or agent.exposed == True):
+                agent.disease_day += 1
+
+            if (SEIR_lambda > 0 and agent.exposed == True):
+                random_float = random.uniform(0, 1.0)
+                if (random_float < SEIR_lambda):
+                    agent.exposed = False
+                    agent.infected = True
+
+                random_float = random.uniform(0, 1.0)
+                if (agent.infected == True and random_float < SEIR_gamma):
+                    agent.infected = False
+                    agent.immune = True
+
+    def update_SEIR_persons_new_infections_second(self, SEIR_lambda):
+        for agent in self.agents:
+            if (agent.exposed == False and agent.infected == False and agent.immune == False and agent.vaccinated == False):
                 random_float = random.uniform(0, 1.0)
                 if (random_float < (self.num_incidence / self.population)):
                     if (SEIR_lambda > 0):
-                        agent.set_agent_exposed()
+                        agent.exposed = True
                     else:
-                        agent.set_agent_infected()
+                        agent.infected = True
 

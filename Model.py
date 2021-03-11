@@ -54,7 +54,7 @@ for x in range(rows):
                 region.live_patches.add(region.patches[x][y])
                 # region.visualised_patches[x][y] = region.patches[x][y].population
 
-            # add all the agents to the patches
+            # add all the agents to the patches make-agents
             for individualAgent in range(0, region.patches[x][y].population):
                 region.patches[x][y].agents.append(InfectionAgent.InfectionAgent(model, x, y))
 
