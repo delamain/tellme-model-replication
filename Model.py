@@ -58,9 +58,16 @@ for x in range(rows):
             for individualAgent in range(0, region.patches[x][y].population):
                 region.patches[x][y].agents.append(InfectionAgent.InfectionAgent(model, x, y))
 
+            region.patches[x][y].set_visible_patches(model)
+
             # add the agents to the schedule
             for individualPatchAgent in region.patches[x][y].agents:
                 model.schedule.agents.add(individualPatchAgent)
+
+# need to assign visible patches once all patches have been created
+for x in range(rows):
+    for y in range(columns):
+        region.patches[x][y].set_visible_patches(model)
 
 regionSteppableModel = Region.RegionSteppable(model)
 displayModel = DisplayModel.DisplayModel(model)

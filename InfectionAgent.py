@@ -22,6 +22,16 @@ class InfectionAgent(Agent):
         self.behave_vaccinate = False
         self.frezied = False
 
+        self.trust = None
+        self.attitudeV_change = None
+        self.attitudeNV_change = None
+        self.info_receieved = False
+        self.normsV_change = None
+        self.normsNV_change = None
+        self.rec_vaccinate = False
+        self.rec_protect = False
+
+
         # disease progression
         self.susceptible = True
         self.exposed = False
@@ -103,8 +113,7 @@ class InfectionAgent(Agent):
         self.attitudeV_current = self.attitudeV_initial
         self.attitudeNV_current = self.attitudeNV_initial
 
-    def seek_vaccination(self, model):
-        region = model.environments["agent_env"]
+    def seek_vaccination(self, region):
 
         if ((region.restrict_vaccine == False or region.epidemic_declared == True)):
             self.behave_vaccinate = True
