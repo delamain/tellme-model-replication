@@ -116,12 +116,13 @@ class Patch(Steppable):
 
         return neigh
 
-    def make_infections_first_patch_self_generated(self, SEIR_beta, efficacy_vaccine):
+    def make_infections_first_patch_self_generated(self, SEIR_beta, efficacy_protect, efficacy_vaccine):
         self.num_travel_incases = 0
 
+        PP = self.reps_own.prop_protect_patch
         PV = self.reps_own.prop_vaccinate_patch
 
-        self.beta_local = SEIR_beta #* (1 - (PV * efficacy_vaccine))
+        self.beta_local = SEIR_beta * (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
 
         self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
 

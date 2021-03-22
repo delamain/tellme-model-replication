@@ -121,3 +121,4 @@ class InfectionAgent(Agent):
             random_float = random.uniform(0, 1.0)
             if (random_float < region.efficacy_vaccine):
                 self.vaccinated = True
+

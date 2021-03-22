@@ -223,25 +223,36 @@ class Region(ObjectGrid2D):
         max_risk_set = []
         for currentPatch in self.live_patches:
             count_behave_vaccinate = 0
+            count_behave_protect = 0
+            visible_people = currentPatch.population
+
+            for currentPatchNeighbour in currentPatch.visible_patches:
+                visible_people += currentPatchNeighbour.population
 
             for agent in currentPatch.agents:
 
                 if (agent.behave_vaccinate == True):
                     count_behave_vaccinate += 1
 
-            currentPatch.normsV = count_behave_vaccinate / len(currentPatch.agents)
+                elif (agent.behave_protect == True):
+                    count_behave_protect += 1
+
+            currentPatch.normsV = count_behave_vaccinate / visible_people
+            currentPatch.normsNV = count_behave_protect / visible_people
             currentPatch.patch_risk = currentPatch.cumulative_incidence * self.worry_relative
+
             max_risk_set.append(currentPatch.patch_risk)
 
-            max_risk = max(max_risk_set)
+        max_risk = max(max_risk_set)
 
         for currentPatch in self.live_patches:
             for agent in currentPatch.agents:
 
                 stubbed_rec_vaccinate_value = 1
+                stubbed_rec_protect_value = 0
 
                 salient_riskV = self.get_risk(agent, currentPatch, stubbed_rec_vaccinate_value, max_risk, self.current_tick)
-                salient_riskNV = self.get_risk(agent, currentPatch, stubbed_rec_vaccinate_value, max_risk, self.current_tick)
+                salient_riskNV = self.get_risk(agent, currentPatch, stubbed_rec_protect_value, max_risk, self.current_tick)
 
 
                 agent.behaviourV_value = self.attitude_weight_V * agent.attitudeV_current \
@@ -254,15 +265,26 @@ class Region(ObjectGrid2D):
                 if (agent.behave_vaccinate == False and agent.behaviourV_value > self.protectV_threshold):
                     agent.seek_vaccination(self)
 
+                if (agent.behave_protect == True):
+                    if (agent.behaviourNV_value < self.protectV_threshold):
+                        agent.behave_protect = False
+                else:
+                    if (agent.behaviourNV_value > self.protectV_threshold):
+                        agent.behave_protect = True
+
         for currentPatch in self.live_patches:
             prop_vaccinate_patch_count = 0
+            prop_protect_patch_count = 0
+
             for agent in currentPatch.agents:
                 if (agent.behave_vaccinate == True):
                     prop_vaccinate_patch_count += 1
 
+                elif (agent.behave_protect == True):
+                    prop_protect_patch_count += 1
+
             currentPatch.reps_own.prop_vaccinate_patch = prop_vaccinate_patch_count / len(currentPatch.agents)
-
-
+            currentPatch.reps_own.prop_protect_patch = prop_protect_patch_count / len(currentPatch.agents)
     
             # if (currentPatch.reps_own.prop_vaccinate_patch != 0):
             #     print("Number at own patch proportion vacc: ", currentPatch.reps_own.prop_vaccinate_patch)
@@ -325,7 +347,7 @@ class RegionSteppable(Steppable):
         # live_patches_list = list(model.environments["agent_env"].live_patches)
         # random.shuffle(live_patches_list)
         for currentPatch in live_patches_list:
-            patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0], region.efficacy_vaccine)
+            patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0], region.efficacy_protect, region.efficacy_vaccine)
             new_cases_made += patch_new_cases_made
 
         for currentPatch in live_patches_list:
