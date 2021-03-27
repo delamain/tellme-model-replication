@@ -347,10 +347,13 @@ class Region(ObjectGrid2D):
 
 class RegionSteppable(Steppable):
 
-    def __init__(self, model):
+    def __init__(self, model, displayModel):
         super(Steppable, self).__init__()
         model.environments["agent_env"].setup_infection(model)
         model.environments["agent_env"].make_reps(model)
+
+        self.displayModel = displayModel
+
 
     def step_prologue(self, model):
         SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
@@ -397,8 +400,11 @@ class RegionSteppable(Steppable):
             self.count_of_patches_with_incidence_greater_than_susceptible = Patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population, self.count_of_patches_with_incidence_greater_than_susceptible)
             region.global_num_incidence += currentPatch.num_incidence
 
-        # if (model.environments["agent_env"].global_num_incidence < 1):
-        #     exit()
+        if (model.environments["agent_env"].global_num_incidence < 1):
+            print("No new infections recorded on this iteration; programme closing.")
+            self.displayModel.create_video_from_images()
+            self.displayModel.display_result()
+            exit()
 
         print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ", self.count_of_patches_with_incidence_greater_than_susceptible)
 

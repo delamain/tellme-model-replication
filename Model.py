@@ -1,7 +1,7 @@
 from panaxea.core.Model import Model
 from InfectionAgent import InfectionAgent
 from LoadGISData import LoadGISData
-import Region
+from Region import Region, RegionSteppable
 from DisplayModel import DisplayModel
 import numpy as np
 
@@ -16,7 +16,7 @@ recovery_period = 5.0
 latency_period = 1.0
 
 # Creating the grid automatically binds it to the model
-region = Region.Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
+region = Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
 
 ascii_grid = gisData.return_ascii_grid()
 NODATA_value = gisData.return_NODATA_value()
@@ -64,17 +64,17 @@ for x in range(rows):
     for y in range(columns):
         region.patches[x][y].set_visible_patches(model)
 
-regionSteppableModel = Region.RegionSteppable(model)
 displayModel = DisplayModel(model)
+regionSteppableModel = RegionSteppable(model, displayModel)
 
 model.schedule.helpers.append(displayModel)
 model.schedule.helpers.append(regionSteppableModel)
 
 displayModel.color_patches_setup(region, population_total)
 
-for xx in range(region.rows):
-    for yy in range(region.columns):
-        region.visualised_patches[xx][yy] = region.patches[xx][yy].color
+for x in range(region.rows):
+    for y in range(region.columns):
+        region.visualised_patches[x][y] = region.patches[x][y].color
 
 displayModel.display_graphical_matrix(region.visualised_patches)
 

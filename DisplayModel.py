@@ -79,6 +79,10 @@ class DisplayModel(Steppable):
         cv2.destroyAllWindows()
         video.release()
 
+        for filename in os.listdir('visualisations/'):
+            if filename.endswith('.png'):
+                os.remove(os.path.join('visualisations/', filename))
+
     def color_patches_setup(self, region, max_popn):
         for x in range(region.rows):
             for y in range(region.columns):
