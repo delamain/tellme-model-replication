@@ -1,5 +1,7 @@
 from panaxea.core.Steppables import Steppable
 from random import shuffle, random
+import Reps
+import random
 
 
 class Patch(Steppable):
@@ -7,20 +9,37 @@ class Patch(Steppable):
     def __init__(self, xcoord, ycoord):
         self.x = xcoord
         self.y = ycoord
-        self.num_travel_incases = 0
-        self.num_susceptible = 0
-        self.num_infected = 0
-        self.cumulative_infected = 0
-        self.num_exposed = 0
-        self.num_immune = 0
-        self.num_incidence = 0 # population to be converted to exposed
-        self.population = 0
+
+        # epidemic model operations
         self.beta_local = 0
         self.new_cases_made = 0
-        self.selfisolation_ticks = 0
-        self.agents = []
+        self.num_susceptible = 0
+        self.num_infected = 0
+        self.num_exposed = 0
+        self.num_incidence = 0  # population to be converted to exposed
+        self.num_travel_incases = 0
+        self.num_immune = 0
+
+        # accessed by people on patch for behaviour
+        self.visible_patches = None
+        self.normsV = None
+        self.normsNV = None
+        self.cumulative_incidence = 0
+        self.patch_risk = None
+
+        # my own implementation variables
+        self.cumulative_infected = 0
+        self.population = 0
         self.within_border = False
         self.color = 0
+        self.reps_own = Reps.Reps()
+        self.agents = []
+
+        self.selfisolation_ticks = 0
+
+        self.visible_patches = []
+        self.attitudeV_current_set = []
+        self.attitudeNV_current_set = []
 
     def increment_patch_agents(self):
         self.num_susceptible += 1
@@ -34,6 +53,37 @@ class Patch(Steppable):
 
         for agentToBeInfected in range(0, int(round(self.num_infected))):
             self.agents[agentToBeInfected].set_agent_infected()
+
+    def set_visible_patches(self, model):
+        neighbourhood = self.get_moore_neighbourhood(model, self.x, self.y)
+        region = model.environments["agent_env"]
+
+        for neighbour in neighbourhood:
+            individualPatch = region.patches[neighbour[0], neighbour[1]]
+            if (individualPatch.within_border == True):
+                self.visible_patches.append(individualPatch)
+
+    def make_reps(self):
+        self.reps_own.ave_attitudeV = 0
+        self.reps_own.max_attitudeV = 0
+        self.reps_own.min_attitudeV = 0
+        self.reps_own.prop_protect_patch = 0
+
+        for agent in self.agents:
+            if (agent.behave_protect == True):
+                self.reps_own.prop_protect_patch += 1
+
+        #print(self.reps_own.prop_protect_patch)
+
+    # def revise_behaviour(self):
+    #     count_behave_vaccinate = 0
+    #
+    #     for agent in self.agents:
+    #
+    #         if (agent.behave_vaccinate == True):
+    #             count_behave_vaccinate += 1
+    #
+    #     normsV = count_behave_vaccinate / self.agents
 
     def number_of_agents_at_patch(self):
         return self.population
@@ -67,9 +117,15 @@ class Patch(Steppable):
 
         return neigh
 
-    def make_infections_first_patch_self_generated(self, SEIR_beta):
+    def make_infections_first_patch_self_generated(self, SEIR_beta, efficacy_protect, efficacy_vaccine):
         self.num_travel_incases = 0
-        self.beta_local = SEIR_beta
+
+        PP = self.reps_own.prop_protect_patch
+        PV = self.reps_own.prop_vaccinate_patch
+
+        #print("PP:", PP, " PV:", PV)
+
+        self.beta_local = SEIR_beta * (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
 
         self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
 
@@ -126,7 +182,7 @@ class Patch(Steppable):
     # SEIR_beta force of infection in epidemic model (excluding protective behaviour)
     # SEIR_lambda transition rate from E to I
     # SEIR_gamma transition rate from I to R
-    def update_SEIR_patches(self, SEIR_gamma, SEIR_lambda):
+    def update_SEIR_patches(self, SEIR_gamma, SEIR_lambda, incidence_dicount):
 
         self.num_immune = self.num_immune + (SEIR_gamma * self.num_infected)
 
@@ -150,18 +206,55 @@ class Patch(Steppable):
 
         self.num_susceptible = self.num_susceptible - self.num_incidence
 
+        num_incidence_visble_patches = 0
+        sum_population_visible_patches = 0
+
+        for neighbour_patch in self.visible_patches:
+            num_incidence_visble_patches += neighbour_patch.num_incidence
+            sum_population_visible_patches += neighbour_patch.population
+
+        if (sum_population_visible_patches != 0):
+            self.cumulative_incidence = (num_incidence_visble_patches / sum_population_visible_patches) \
+                                        + (1 - incidence_dicount) * self.cumulative_incidence
+
+            if self.cumulative_incidence != 0:
+                pass
+
+        else:
+            #print(len(self.visible_patches))
+            # no visible patches and so get division by 0 error for the neighbouring populations
+            # artificial value is set for cumulative incidence
+            self.cumulative_incidenc = 0.1
+
+
         seirValue = self.num_susceptible + self.num_exposed + self.num_infected + self.num_immune
 
         if ((self.num_susceptible or self.num_exposed or self.num_infected or self.num_immune) < 0):
             print("ERROR", self.x, self.y)
 
-    def update_SEIR_persons(self, SEIR_lambda):
+    def update_SEIR_persons_first(self, SEIR_lambda, SEIR_gamma):
         for agent in self.agents:
-            if (agent.check_agent_not_exposed_not_infected_not_immune == False):
+            if (agent.infected == True or agent.exposed == True):
+                agent.disease_day += 1
+
+            if (SEIR_lambda > 0 and agent.exposed == True):
+                random_float = random.uniform(0, 1.0)
+                if (random_float < SEIR_lambda):
+                    agent.exposed = False
+                    agent.infected = True
+
+                random_float = random.uniform(0, 1.0)
+                if (agent.infected == True and random_float < SEIR_gamma):
+                    agent.infected = False
+                    agent.immune = True
+
+    def update_SEIR_persons_new_infections_second(self, SEIR_lambda):
+        for agent in self.agents:
+            if (agent.exposed == False and agent.infected == False and agent.immune == False and agent.vaccinated == False):
                 random_float = random.uniform(0, 1.0)
                 if (random_float < (self.num_incidence / self.population)):
                     if (SEIR_lambda > 0):
-                        agent.set_agent_exposed()
+                        agent.exposed = True
                     else:
-                        agent.set_agent_infected()
+                        agent.infected = True
 

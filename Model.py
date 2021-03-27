@@ -1,12 +1,11 @@
 from panaxea.core.Model import Model
-import InfectionAgent
-import LoadGISData
+from InfectionAgent import InfectionAgent
+from LoadGISData import LoadGISData
 import Region
-import DisplayModel
+from DisplayModel import DisplayModel
 import numpy as np
-import cv2
 
-gisData = LoadGISData.LoadGISData("popn_density_uk_2015.asc")
+gisData = LoadGISData("popn_density_uk_2015.asc")
 xsize = ysize = gisData.return_grid_size()
 population = gisData.return_population("UK")
 
@@ -25,16 +24,14 @@ rows = ascii_grid.shape[0]
 columns = ascii_grid.shape[1]
 
 population_total = 0
-count_of_pop_non_zero_squares = gisData.return_count_of_non_zero_patches()
 sum_popn_of_patches_with_popn_greater_than_zero = gisData.return_sum_popn_of_patches_with_popn_greater_than_zero()
 factor = (10000 * population) / sum_popn_of_patches_with_popn_greater_than_zero
 print("Factor value:", factor)
-print("Count of non-zero patches:", count_of_pop_non_zero_squares)
+print("Count of non-zero patches:", gisData.return_count_of_non_zero_patches())
 print("Sum of population, with patches with a popn > 0:", sum_popn_of_patches_with_popn_greater_than_zero)
 count = 0
 
 print("DOES THIS PRINT", ascii_grid.max() * factor)
-#print(np.argmax(patch_populations_matrix_numpy))
 a = ascii_grid  # Can be of any shape
 indices = np.where(a == a.max())
 print(indices)
@@ -52,29 +49,36 @@ for x in range(rows):
                 region.live_patches.add(region.patches[x][y])
                 # region.visualised_patches[x][y] = region.patches[x][y].population
 
-            # add all the agents to the patches
+            # add all the agents to the patches make-agents
             for individualAgent in range(0, region.patches[x][y].population):
-                region.patches[x][y].agents.append(InfectionAgent.InfectionAgent(model, x, y))
+                region.patches[x][y].agents.append(InfectionAgent(model, x, y))
+
+            region.patches[x][y].set_visible_patches(model)
 
             # add the agents to the schedule
             for individualPatchAgent in region.patches[x][y].agents:
                 model.schedule.agents.add(individualPatchAgent)
 
+# need to assign visible patches once all patches have been created
+for x in range(rows):
+    for y in range(columns):
+        region.patches[x][y].set_visible_patches(model)
+
 regionSteppableModel = Region.RegionSteppable(model)
-displayModel = DisplayModel.DisplayModel(model)
+displayModel = DisplayModel(model)
 
 model.schedule.helpers.append(displayModel)
 model.schedule.helpers.append(regionSteppableModel)
 
-DisplayModel.DisplayModel.color_patches_setup(displayModel, region, population_total)
+displayModel.color_patches_setup(region, population_total)
 
 for xx in range(region.rows):
     for yy in range(region.columns):
         region.visualised_patches[xx][yy] = region.patches[xx][yy].color
 
-DisplayModel.DisplayModel.display_graphical_matrix(displayModel, region.visualised_patches)
+displayModel.display_graphical_matrix(region.visualised_patches)
 
 model.run()
 
-DisplayModel.DisplayModel.create_video_from_images(displayModel)
-DisplayModel.DisplayModel.display_result(displayModel)
+displayModel.create_video_from_images()
+displayModel.display_result()
