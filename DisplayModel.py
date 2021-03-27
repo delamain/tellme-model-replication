@@ -1,11 +1,8 @@
 import os
 import cv2
-import glob
 
-from matplotlib import cm
 from panaxea.core.Steppables import Steppable
 import matplotlib.pyplot as plt
-import numpy as np
 from natsort import natsorted
 
 class DisplayModel(Steppable):

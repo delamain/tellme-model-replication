@@ -1,3 +1,5 @@
+import statistics
+
 import numpy as np
 from panaxea.core.Environment import ObjectGrid2D
 from panaxea.core.Steppables import Steppable
@@ -90,7 +92,7 @@ class Region(ObjectGrid2D):
         self.start_si_tick = None
         self.current_tick = 0
 
-
+        self.attitude_decay = 2
 
     def setup_infection(self, model):
 
@@ -195,6 +197,40 @@ class Region(ObjectGrid2D):
     def random_yposition_within_grid(self, model):
         ylimit = model.environments["agent_env"].ysize - 1
         return random.randint(0, ylimit)
+
+    def revise_attitude(self):
+        for currentPatch in self.live_patches:
+            for agent in currentPatch.agents:
+                agent.attitudeV_current = agent.attitudeV_current # + agent.attitudeV_change
+                agent.attitudeV_current = agent.attitudeV_current + ( 1 - self.attitude_decay / 100) * (agent.attitudeV_current - agent.attitudeV_initial)
+
+                if agent.attitudeV_current > 1:
+                    agent.attitudeV_current = 1
+                elif agent.attitudeV_current < 0:
+                    agent.attitudeV_current = 0
+
+                agent.attitudeNV_current = agent.attitudeNV_current  # + agent.attitudeV_change
+                agent.attitudeNV_current = agent.attitudeNV_current + (1 - self.attitude_decay / 100) * (
+                            agent.attitudeNV_current - agent.attitudeNV_initial)
+
+                if agent.attitudeNV_current > 1:
+                    agent.attitudeNV_current = 1
+                elif agent.attitudeNV_current < 0:
+                    agent.attitudeNV_current = 0
+
+                currentPatch.attitudeV_current_set.append(agent.attitudeV_current)
+                currentPatch.attitudeNV_current_set.append(agent.attitudeNV_current)
+
+        for currentPatch in self.live_patches:
+            currentPatch.reps_own.ave_attitudeV = statistics.mean(currentPatch.attitudeV_current_set)
+            currentPatch.reps_own.max_attitudeV = max(currentPatch.attitudeV_current_set)
+            currentPatch.reps_own.min_attitudeV = min(currentPatch.attitudeV_current_set)
+
+            currentPatch.reps_own.ave_attitudeNV = statistics.mean(currentPatch.attitudeNV_current_set)
+            currentPatch.reps_own.max_attitudeNV = max(currentPatch.attitudeV_current_set)
+            currentPatch.reps_own.min_attitudeNV = min(currentPatch.attitudeNV_current_set)
+
+
 
     def triangular0to1(self, MM, UU):
         if (UU < MM):
@@ -377,6 +413,7 @@ class RegionSteppable(Steppable):
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
 
+        #region.revise_attitude()
         region.revise_behaviour()
 
         region.current_tick += 1

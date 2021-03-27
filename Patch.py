@@ -27,7 +27,6 @@ class Patch(Steppable):
         self.cumulative_incidence = 0
         self.patch_risk = None
 
-
         # my own implementation variables
         self.cumulative_infected = 0
         self.population = 0
@@ -39,6 +38,8 @@ class Patch(Steppable):
         self.selfisolation_ticks = 0
 
         self.visible_patches = []
+        self.attitudeV_current_set = []
+        self.attitudeNV_current_set = []
 
     def increment_patch_agents(self):
         self.num_susceptible += 1
@@ -121,6 +122,8 @@ class Patch(Steppable):
 
         PP = self.reps_own.prop_protect_patch
         PV = self.reps_own.prop_vaccinate_patch
+
+        #print("PP:", PP, " PV:", PV)
 
         self.beta_local = SEIR_beta * (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
 
