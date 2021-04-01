@@ -1,6 +1,6 @@
 from panaxea.core.Steppables import Steppable
 from random import shuffle, random
-import Reps
+from main import Reps
 import random
 
 

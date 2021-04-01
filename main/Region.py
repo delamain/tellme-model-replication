@@ -5,7 +5,8 @@ from panaxea.core.Environment import ObjectGrid2D
 from panaxea.core.Steppables import Steppable
 import math
 import random
-import Patch
+from main import Patch
+
 
 class Region(ObjectGrid2D):
 
