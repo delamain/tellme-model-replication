@@ -1,5 +1,6 @@
 import os
 import cv2
+import csv
 
 from panaxea.core.Steppables import Steppable
 import matplotlib.pyplot as plt
@@ -45,6 +46,15 @@ class DisplayModel(Steppable):
 
 
         self.iteration_count += 1
+
+    def write_results_to_csv(self):
+
+        with open('model_results.csv', mode='w') as model_results:
+            employee_writer = csv.writer(model_results, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+            for int in range(0, self.number_of_epochs_count):
+                employee_writer.writerow([self.global_number_of_epochs[int], self.global_num_incidence_array[int], self.global_prevalence_array[int]])
+
 
     def display_graphical_matrix(self, gis_matrix):
         #plt.imshow(gis_matrix)

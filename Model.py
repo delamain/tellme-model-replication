@@ -5,15 +5,15 @@ from Region import Region, RegionSteppable
 from DisplayModel import DisplayModel
 import numpy as np
 
-gisData = LoadGISData("popn_density_uk_2015.asc")
-xsize = ysize = gisData.return_grid_size()
-population = gisData.return_population("UK")
-
 # model constructor (number of iterations)
 model = Model(200)
 R0 = 2
 recovery_period = 5.0
 latency_period = 1.0
+
+gisData = LoadGISData("popn_density_uk_2015.asc")
+xsize = ysize = gisData.return_grid_size()
+population = gisData.return_population("UK")
 
 # Creating the grid automatically binds it to the model
 region = Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
@@ -81,4 +81,5 @@ displayModel.display_graphical_matrix(region.visualised_patches)
 model.run()
 
 displayModel.create_video_from_images()
+displayModel.write_results_to_csv()
 displayModel.display_result()
