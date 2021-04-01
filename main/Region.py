@@ -326,9 +326,6 @@ class Region(ObjectGrid2D):
             #     print("Number at own patch proportion vacc: ", currentPatch.reps_own.prop_vaccinate_patch)
 
 
-
-
-
     # WILL PRINT OUT MATRIX WITH AXIS
     # ------------------------------> (y) COLUMNS
     # | (0,0) (0,1) (0,2) (0,3) (0,4) ...
@@ -353,7 +350,6 @@ class RegionSteppable(Steppable):
         model.environments["agent_env"].make_reps(model)
 
         self.displayModel = displayModel
-
 
     def step_prologue(self, model):
         SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
@@ -400,11 +396,11 @@ class RegionSteppable(Steppable):
             self.count_of_patches_with_incidence_greater_than_susceptible = Patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population, self.count_of_patches_with_incidence_greater_than_susceptible)
             region.global_num_incidence += currentPatch.num_incidence
 
-        if (model.environments["agent_env"].global_num_incidence < 1):
-            print("No new infections recorded on this iteration; programme closing.")
-            self.displayModel.create_video_from_images()
-            self.displayModel.display_result()
-            exit()
+        # if (model.environments["agent_env"].global_num_incidence < 1):
+        #     print("No new infections recorded on this iteration; programme closing.")
+        #     self.displayModel.create_video_from_images()
+        #     self.displayModel.display_result()
+        #     exit()
 
         print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ", self.count_of_patches_with_incidence_greater_than_susceptible)
 
@@ -413,28 +409,15 @@ class RegionSteppable(Steppable):
             Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1], region.incidence_discount)
             region.update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
 
-        for currentPatch in live_patches_list:
-            Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
-
-        for currentPatch in live_patches_list:
-            Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
-
-        #region.revise_attitude()
-        region.revise_behaviour()
+        # for currentPatch in live_patches_list:
+        #     Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
+        #
+        # for currentPatch in live_patches_list:
+        #     Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
+        #
+        # region.revise_attitude()
+        # region.revise_behaviour()
 
         region.current_tick += 1
-
-
-    def step_epilogue(self, model):
-        agent_env = model.environments["agent_env"]
-        #model.environments["agent_env"].print_out_region_patches()
-
-        # SEIR_variables = model.environments["agent_env"].return_SEIR_variables()
-        #
-        # total_people = SEIR_variables[0] + SEIR_variables[1] + SEIR_variables[2] + SEIR_variables[3]
-        #
-        # print("S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2], SEIR_variables[3]))
-        #
-        # print("TOTAL: {0}".format(round(total_people)))
 
 

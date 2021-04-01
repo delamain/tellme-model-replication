@@ -31,7 +31,6 @@ class InfectionAgent(Agent):
         self.rec_vaccinate = False
         self.rec_protect = False
 
-
         # disease progression
         self.susceptible = True
         self.exposed = False
@@ -61,7 +60,6 @@ class InfectionAgent(Agent):
         model.environments["agent_env"].add_agent_to_patch(xpos, ypos)
 
         self.initial_attitude(model)
-
         self.end_of_grid = False
 
     def set_agent_exposed(self):

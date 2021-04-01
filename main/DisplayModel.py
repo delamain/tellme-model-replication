@@ -73,8 +73,6 @@ class DisplayModel(Steppable):
         image_folder = 'visualisations'
         video_name = 'video.avi'
 
-        # images = [img for img in glob.glob("visualisations/*.png")]
-
         images = [img for img in natsorted(os.listdir(image_folder)) if img.endswith(".png")]
         frame = cv2.imread(os.path.join(image_folder, images[0]))
         height, width, layers = frame.shape
@@ -138,16 +136,6 @@ class DisplayModel(Steppable):
 
 
     def display_result(self):
-        # plt.plot(self.global_number_of_epochs, self.global_num_susceptible_array, "-b", label="susceptible")
-        # plt.plot(self.global_number_of_epochs, self.global_num_exposed_array, "-y", label="exposed")
-        # plt.plot(self.global_number_of_epochs, self.global_num_infected_array, "-r", label="infected")
-        # plt.plot(self.global_number_of_epochs, self.global_num_immune_array, "-g", label="immune")
-
-        # incidence and prevalence are displayed in the TELL ME model
-        # plt.plot(self.global_number_of_epochs, self.global_num_incidence_array, "-c", label="incidence")
-        # plt.plot(self.global_number_of_epochs, self.global_prevalence_array, "-m", label="prevalence")
-        #
-        # plt.legend(loc="upper left")
 
         seir_plot = plt.figure(1)
         plt.plot(self.global_number_of_epochs, self.global_num_susceptible_array, "-b", label="susceptible")
@@ -163,17 +151,4 @@ class DisplayModel(Steppable):
         plt.legend(loc="upper left")
 
         plt.show()
-
-    # def generate_video(img):
-    #     for i in xrange(len(img)):
-    #         plt.imshow(img[i], cmap=cm.Greys_r)
-    #         plt.savefig(folder + "/file%02d.png" % i)
-    #
-    #     os.chdir("your_folder")
-    #     subprocess.call([
-    #         'ffmpeg', '-framerate', '8', '-i', 'file%02d.png', '-r', '30', '-pix_fmt', 'yuv420p',
-    #         'video_name.mp4'
-    #     ])
-    #     for file_name in glob.glob("*.png"):
-    #         os.remove(file_name)
 
