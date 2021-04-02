@@ -40,19 +40,14 @@ class Patch(Steppable):
         self.visible_patches = []
         self.attitudeV_current_set = []
         self.attitudeNV_current_set = []
-
-    def increment_patch_agents(self):
-        self.num_susceptible += 1
+        self.numberOfAgents = 0
 
     def set_infectious_agents_setup(self, numberOfInfectiousAgents):
-        if (numberOfInfectiousAgents < 10):
-            numberOfInfectiousAgents = 10
+        if (numberOfInfectiousAgents < 100):
+            numberOfInfectiousAgents = 100
 
         self.num_infected = numberOfInfectiousAgents
         self.num_susceptible = self.num_susceptible - numberOfInfectiousAgents
-
-        for agentToBeInfected in range(0, int(round(self.num_infected))):
-            self.agents[agentToBeInfected].set_agent_infected()
 
     def set_visible_patches(self, model):
         neighbourhood = self.get_moore_neighbourhood(model, self.x, self.y)
@@ -72,21 +67,6 @@ class Patch(Steppable):
         for agent in self.agents:
             if (agent.behave_protect == True):
                 self.reps_own.prop_protect_patch += 1
-
-        #print(self.reps_own.prop_protect_patch)
-
-    # def revise_behaviour(self):
-    #     count_behave_vaccinate = 0
-    #
-    #     for agent in self.agents:
-    #
-    #         if (agent.behave_vaccinate == True):
-    #             count_behave_vaccinate += 1
-    #
-    #     normsV = count_behave_vaccinate / self.agents
-
-    def number_of_agents_at_patch(self):
-        return self.population
 
     def return_x_coord(self):
         return self.x
@@ -125,7 +105,7 @@ class Patch(Steppable):
 
         #print("PP:", PP, " PV:", PV)
 
-        self.beta_local = SEIR_beta #* (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
+        self.beta_local = SEIR_beta * (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
 
         self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
 
@@ -146,9 +126,6 @@ class Patch(Steppable):
                     neighbour[1]].population
 
                 nbr_popn += individual_neighbour_population
-
-            # if (nbr_popn == 0):
-            #     print("NEIGHBOUR POPULATION IS ZERO at", self.x, self.y)
 
         for neighbour in neighbours:
             if (model.environments["agent_env"].patches[neighbour[0]][
@@ -171,10 +148,6 @@ class Patch(Steppable):
                                                 + self.num_travel_incases
 
         if (self.num_incidence > self.num_susceptible):
-
-            # if (self.num_susceptible == 0):
-            #     count += 1
-            #print("INCIDENCE IS GREATER THAN SUCEPTIBLE", self.num_susceptible)
             self.num_incidence = self.num_susceptible
 
         return count

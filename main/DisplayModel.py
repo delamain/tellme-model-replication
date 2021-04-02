@@ -51,6 +51,7 @@ class DisplayModel(Steppable):
 
         with open('model_results.csv', mode='w') as model_results:
             employee_writer = csv.writer(model_results, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            employee_writer.writerow(['epoch_number', 'incidence', 'prevalence'])
 
             for int in range(0, self.number_of_epochs_count):
                 employee_writer.writerow([self.global_number_of_epochs[int], self.global_num_incidence_array[int], self.global_prevalence_array[int]])
@@ -151,4 +152,9 @@ class DisplayModel(Steppable):
         plt.legend(loc="upper left")
 
         plt.show()
+
+    def end_routine(self):
+        self.create_video_from_images()
+        self.write_results_to_csv()
+        self.display_result()
 

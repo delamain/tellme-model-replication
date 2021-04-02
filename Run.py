@@ -5,11 +5,13 @@ from main.Region import Region, RegionSteppable
 from main.DisplayModel import DisplayModel
 import time
 
-number_of_epochs = 5
+number_of_epochs = 200
 R0 = 2
 recovery_period = 5.0
 latency_period = 1.0
-population_normalisation_total = 10000
+population_normalisation_total = 1000000
+numPP_persons = 5000
+min_agents_per_patch = 10
 
 # loading GIS data
 gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
@@ -32,25 +34,33 @@ print("Greatest patch population value:", ascii_grid.max() * factor)
 
 agentsToBeAddedToSet = []
 population_total = 0
+region.global_population = 0
+region.global_num_susceptible = 0
 for x in range(rows):
     for y in range(columns):
-        if (ascii_grid[x, y] != NODATA_value): # if there is a population value
+        if (ascii_grid[x, y] != NODATA_value):
             population_total += ascii_grid[x, y]
             region.patches[x][y].population = round((ascii_grid[x, y]) * factor)
+            region.patches[x][y].num_susceptible = region.patches[x][y].population
+            region.global_population += region.patches[x][y].population
+            region.global_num_susceptible += region.patches[x][y].population
 
             if (region.patches[x][y].population != 0):
                 region.patches[x][y].within_border = True
                 region.live_patches.add(region.patches[x][y])
 
-            # add all the agents to the patches make-agents
-            for individualAgent in range(0, region.patches[x][y].population):
-                region.patches[x][y].agents.append(InfectionAgent(model, x, y))
+                numberOfAgents = max(region.patches[x][y].population / numPP_persons, min_agents_per_patch)
+                region.patches[x][y].numberOfAgents = int(numberOfAgents)
 
-            region.patches[x][y].set_visible_patches(model)
+                # add all the agents to the patches make-agents
+                for individualAgent in range(0, region.patches[x][y].numberOfAgents):
+                    region.patches[x][y].agents.append(InfectionAgent(model, x, y))
 
-            # add the agents to the schedule
-            for individualPatchAgent in region.patches[x][y].agents:
-                model.schedule.agents.add(individualPatchAgent)
+                region.patches[x][y].set_visible_patches(model)
+
+                # add the agents to the schedule
+                for individualPatchAgent in region.patches[x][y].agents:
+                    model.schedule.agents.add(individualPatchAgent)
 
 # need to assign visible patches once all patches have been created
 for x in range(rows):
@@ -75,6 +85,5 @@ start_time = time.time()
 model.run()
 print("--- %s seconds ---" % (time.time() - start_time))
 
-displayModel.create_video_from_images()
-displayModel.write_results_to_csv()
-displayModel.display_result()
+displayModel.end_routine()
+

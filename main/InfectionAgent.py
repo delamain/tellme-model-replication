@@ -57,24 +57,9 @@ class InfectionAgent(Agent):
 
         # automatically adds agent to the environment
         self.add_agent_to_grid("agent_env", (xpos, ypos), model)
-        model.environments["agent_env"].add_agent_to_patch(xpos, ypos)
 
         self.initial_attitude(model)
         self.end_of_grid = False
-
-    def set_agent_exposed(self):
-        self.susceptible = False
-        self.exposed = True
-
-    def set_agent_infected(self):
-        self.susceptible = False
-        self.exposed = False
-        self.infected = True
-
-    def set_agent_recovered(self):
-        self.exposed = False
-        self.infected = False
-        self.immune = True
 
     def check_agent_not_exposed_not_infected_not_immune(self):
         if (self.exposed or self.infected or self.immune == True):

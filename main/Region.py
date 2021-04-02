@@ -101,7 +101,7 @@ class Region(ObjectGrid2D):
 
         for x in range(self.rows):
             for y in range(self.columns):
-                patch_populations_matrix[x][y] = self.patches[x][y].number_of_agents_at_patch()
+                patch_populations_matrix[x][y] = self.patches[x][y].population
 
         patch_populations_matrix_numpy = np.array(patch_populations_matrix)
 
@@ -113,7 +113,7 @@ class Region(ObjectGrid2D):
         # printing the maximum five elements and their indices
         for j in range(n):
             print(row_indices[j], col_indices[j], " ", end='')
-            print(self.patches[row_indices[j]][col_indices[j]].number_of_agents_at_patch(), " ", end='')
+            print(self.patches[row_indices[j]][col_indices[j]].population, " ", end='')
 
         print("\nMaximum element value: ", patch_populations_matrix_numpy.max())
         #print(np.argmax(patch_populations_matrix_numpy))
@@ -125,15 +125,15 @@ class Region(ObjectGrid2D):
         i = random.randint(0, 4)
 
         # setting the infectious number of agents at that individual starting patch
-        print("START POP, ", self.start_epi_population
+        print("Start number of infectious agents:", self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
                                                                                      col_indices[
-                                                                                         i]].number_of_agents_at_patch())
+                                                                                         i]].population)
 
         self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
                                                                                      col_indices[
-                                                                                         i]].number_of_agents_at_patch())
+                                                                                         i]].population)
 
         # susceptible = patch population - number of infected
         self.patches[row_indices[i]][col_indices[i]].num_susceptible = self.patches[row_indices[i]][
@@ -144,10 +144,10 @@ class Region(ObjectGrid2D):
 
     # this function will only be called once
     # increments global population and num susceptible to assist reporting
-    def add_agent_to_patch(self, x, y):
-        self.global_population += 1
-        self.global_num_susceptible += 1
-        self.patches[x][y].increment_patch_agents()
+    # def add_agent_to_patch(self, x, y):
+    #     self.global_population += 1
+    #     self.global_num_susceptible += 1
+    #     self.patches[x][y].increment_patch_agents()
 
     def number_of_patches(self):
         return self.rows * self.columns
@@ -399,8 +399,7 @@ class RegionSteppable(Steppable):
 
         # if (model.environments["agent_env"].global_num_incidence < 1):
         #     print("No new infections recorded on this iteration; programme closing.")
-        #     self.displayModel.create_video_from_images()
-        #     self.displayModel.display_result()
+        #     self.displayModel.end_routine()
         #     exit()
 
         print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ", self.count_of_patches_with_incidence_greater_than_susceptible)
@@ -410,14 +409,14 @@ class RegionSteppable(Steppable):
             Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1], region.incidence_discount)
             region.update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
 
-        # for currentPatch in live_patches_list:
-        #     Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
-        #
-        # for currentPatch in live_patches_list:
-        #     Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
-        #
-        # region.revise_attitude()
-        # region.revise_behaviour()
+        for currentPatch in live_patches_list:
+            Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
+
+        for currentPatch in live_patches_list:
+            Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
+
+        region.revise_attitude()
+        region.revise_behaviour()
 
         region.current_tick += 1
 
