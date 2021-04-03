@@ -10,7 +10,7 @@ class LoadGISData:
         self.yllcorner = linecache.getline(popn_density_file, 4)
         self.cellsize = linecache.getline(popn_density_file, 5)
 
-        # TBC - manipulating this string to dynamically read NODATA_value#
+        # TBC - manipulating this string to dynamically read NODATA_value
         # self.NODATA_value = linecache.getline(popn_density_file, 6)
 
         self.NODATA_value = np.float64(-9999)
@@ -39,6 +39,50 @@ class LoadGISData:
             return 4.26
         elif (country == "Cyprus"):
             return 1.16
+        elif(country == "Czech Republic"):
+            return 10.8
+        elif (country == "Denmark"):
+            return 5.7
+        elif (country == "Estonia"):
+            return 1.3
+        elif (country == "Finland"):
+            return 5.46
+        elif (country == "France"):
+            return 65
+        elif (country == "Germany"):
+            return 82.6
+        elif (country == "Greece"):
+            return 11.1
+        elif (country == "Hungary"):
+            return 9.9
+        elif (country == "Ireland"):
+            return 4.73
+        elif (country == "Italy"):
+            return 61
+        elif (country == "Latvia"):
+            return 2
+        elif (country == "Lithuania"):
+            return 3
+        elif (country == "Luxembourg"):
+            return 0.54
+        elif (country == "Malta"):
+            return 0.45
+        elif (country == "Netherlands"):
+            return 16.8
+        elif (country == "Poland"):
+            return 38
+        elif (country == "Portugal"):
+            return 10.6
+        elif (country == "Romania"):
+            return 21.6
+        elif (country == "Slovakia"):
+            return 5.5
+        elif (country == "Slovenia"):
+            return 2.1
+        elif (country == "Spain"):
+            return 47
+        elif (country == "Sweden"):
+            return 9.7
         elif (country == "UK"):
             return 64
 
