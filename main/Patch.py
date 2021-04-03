@@ -3,7 +3,6 @@ from random import shuffle, random
 from main import Reps
 import random
 
-
 class Patch(Steppable):
 
     def __init__(self, xcoord, ycoord):

@@ -18,12 +18,16 @@ class DisplayModel(Steppable):
         self.global_num_immune_array = []
         self.global_num_incidence_array = []
         self.global_prevalence_array = []
+
+        self.regions_affected_by_epidemic = []
+
         self.iteration_count = 0
 
     def step_prologue(self, model):
         S, E, I, R = self.model.return_SEIR_variables()
         incidence = self.model.return_num_incidence()
         prevalance = self.model.return_prevalence()
+        regions_affected_by_epidemic = self.regions_affected_by_epidemic_calculation()
 
         self.global_number_of_epochs.append(self.number_of_epochs_count)
         self.global_num_susceptible_array.append(S)
@@ -32,6 +36,7 @@ class DisplayModel(Steppable):
         self.global_num_immune_array.append(R)
         self.global_num_incidence_array.append(incidence)
         self.global_prevalence_array.append(prevalance)
+        self.regions_affected_by_epidemic.append(regions_affected_by_epidemic)
         self.number_of_epochs_count += 1
 
         region = model.environments["agent_env"]
@@ -46,6 +51,17 @@ class DisplayModel(Steppable):
 
 
         self.iteration_count += 1
+
+    def regions_affected_by_epidemic_calculation(self):
+        regions_affected_count = 0
+
+        for currentPatch in self.model.live_patches:
+            if currentPatch.num_susceptible < (0.95 * currentPatch.population):
+                regions_affected_count += 1
+
+        print(regions_affected_count / len(self.model.live_patches))
+
+        return regions_affected_count / len(self.model.live_patches)
 
     def write_results_to_csv(self):
 

@@ -9,7 +9,7 @@ number_of_epochs = 200
 R0 = 2
 recovery_period = 5.0
 latency_period = 1.0
-population_normalisation_total = 1000000
+population_normalisation_total = 100000
 numPP_persons = 5000
 min_agents_per_patch = 10
 
