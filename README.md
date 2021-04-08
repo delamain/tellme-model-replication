@@ -1,4 +1,4 @@
-How to install:
+How to install (Linux/Mac):
 1) Set up your virtual environment: python3 -m venv env
 2) Activate your virtual environment: source env/bin/activate
 3) Clone the model replication directory: git clone https://github.com/delamain/tellme-model-replication.git
