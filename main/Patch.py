@@ -104,7 +104,7 @@ class Patch(Steppable):
 
         #print("PP:", PP, " PV:", PV)
 
-        self.beta_local = SEIR_beta * (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
+        self.beta_local = SEIR_beta #* (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
 
         self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
 

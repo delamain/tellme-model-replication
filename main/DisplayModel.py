@@ -67,10 +67,10 @@ class DisplayModel(Steppable):
 
         with open('model_results.csv', mode='w') as model_results:
             employee_writer = csv.writer(model_results, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            employee_writer.writerow(['epoch_number', 'incidence', 'prevalence'])
+            employee_writer.writerow(['epoch_number', 'incidence', 'prevalence', 'regions_affected_by_pandemic'])
 
             for int in range(0, self.number_of_epochs_count):
-                employee_writer.writerow([self.global_number_of_epochs[int], self.global_num_incidence_array[int], self.global_prevalence_array[int]])
+                employee_writer.writerow([self.global_number_of_epochs[int], self.global_num_incidence_array[int], self.global_prevalence_array[int], self.regions_affected_by_epidemic[int]])
 
 
     def display_graphical_matrix(self, gis_matrix):
@@ -104,9 +104,9 @@ class DisplayModel(Steppable):
         cv2.destroyAllWindows()
         video.release()
 
-        for filename in os.listdir('visualisations/'):
-            if filename.endswith('.png'):
-                os.remove(os.path.join('visualisations/', filename))
+        # for filename in os.listdir('visualisations/'):
+        #     if filename.endswith('.png'):
+        #         os.remove(os.path.join('visualisations/', filename))
 
     def color_patches_setup(self, region, max_popn):
         for x in range(region.rows):

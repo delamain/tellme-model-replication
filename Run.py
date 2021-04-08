@@ -5,11 +5,11 @@ from main.Region import Region, RegionSteppable
 from main.DisplayModel import DisplayModel
 import time
 
-number_of_epochs = 200
-R0 = 2
+number_of_epochs = 150
+R0 = 3
 recovery_period = 5.0
 latency_period = 1.0
-population_normalisation_total = 100000
+population_normalisation_total = 1000000
 numPP_persons = 5000
 min_agents_per_patch = 10
 
