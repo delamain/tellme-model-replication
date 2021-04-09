@@ -5,3 +5,7 @@ How to install (Linux/Mac):
 4) Change directory to the model directory: cd tellme-model-replication/
 5) Install the dependent packages: pip install -r requirements.txt 
 6) If succesful, run the model: python Run.py
+
+
+How to run unit tests:
+python -m unittest
