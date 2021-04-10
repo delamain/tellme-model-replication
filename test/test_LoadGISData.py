@@ -29,8 +29,20 @@ class TestLoadGISData(unittest.TestCase):
         self.assertEqual(nrows[0], 312)
         self.assertEqual(ncols[0], 312)
 
-    # Test comparison with NetLogo model (i.e. do same number of empty patches get obtained)
-    # Test return_count_of_non_zero_patches is the same as NetLogo model
+    def test_numpy_count_of_non_zero_is_same_as_manual(self):
+        gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
+
+        count_non_zero_patch = 0
+
+        for x in range(gisData.rows):
+            for y in range(gisData.columns):
+                if gisData.ascii_grid[x][y] != gisData.NODATA_value:
+                    count_non_zero_patch += 1
+
+        numpyCount = gisData.return_count_of_non_zero_patches()
+
+        self.assertEqual(numpyCount, count_non_zero_patch)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -11,7 +11,7 @@ def model_mock(test_number_of_epochs):
     return Model(test_number_of_epochs)
 
 def region_mock(xsize, ysize, model, R0, recovery_period, latency_period):
-    region = Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
+    return Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
 
 def patch_mock(x, y):
     return Patch(x, y)
@@ -50,6 +50,44 @@ class TestPatch(unittest.TestCase):
         patch = patch_mock(0, 0)
         patch.set_infectious_agents_setup(110)
         self.assertEqual(patch.num_infected, 110)
+
+    def test_visible_patches_empty(self):
+        model = model_mock(10)
+        region = region_mock(10, 10, model, 1, 2, 5)
+
+        for x in range(region.xsize):
+            for y in range(region.ysize):
+                region.patches[x][y] = patch_mock(x, y)
+
+        patch = region.patches[2][2]
+        patch.set_visible_patches(model)
+        for patch in patch.visible_patches:
+            print(patch.x, patch.y)
+
+        self.assertEqual(len(patch.visible_patches), 0)
+
+    def test_visible_patches_people_occupied(self):
+        model = model_mock(10)
+        region = region_mock(10, 10, model, 1, 2, 5)
+
+        for x in range(region.xsize):
+            for y in range(region.ysize):
+                region.patches[x][y] = patch_mock(x, y)
+
+        centre_patch = region.patches[2][2]
+
+        adjacent_patches = []
+        adjacent_patches.append(region.patches[3][2])
+        adjacent_patches.append(region.patches[2][3])
+        adjacent_patches.append(region.patches[1][2])
+        adjacent_patches.append(region.patches[2][1])
+
+        for patch in adjacent_patches:
+            patch.within_border = True
+
+        centre_patch.set_visible_patches(model)
+
+        self.assertEqual(len(centre_patch.visible_patches), 4)
 
     # def test_make_infections_first_patch_self_generated(self):
     #     pass

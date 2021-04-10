@@ -59,8 +59,6 @@ class DisplayModel(Steppable):
             if currentPatch.num_susceptible < (0.95 * currentPatch.population):
                 regions_affected_count += 1
 
-        print(regions_affected_count / len(self.model.live_patches))
-
         return regions_affected_count / len(self.model.live_patches)
 
     def write_results_to_csv(self):
