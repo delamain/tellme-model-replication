@@ -6,6 +6,9 @@ class LoadGISData:
     def __init__(self, popn_density_file):
         self.ncols = linecache.getline(popn_density_file, 1)
         self.nrows = linecache.getline(popn_density_file, 2)
+
+        assert self.ncols == self.nrows
+
         self.xllcorner = linecache.getline(popn_density_file, 3)
         self.yllcorner = linecache.getline(popn_density_file, 4)
         self.cellsize = linecache.getline(popn_density_file, 5)

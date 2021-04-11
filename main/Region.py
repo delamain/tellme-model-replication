@@ -254,7 +254,8 @@ class Region(ObjectGrid2D):
 
         return self.perceived_susceptibility * self.risk_weighting
 
-
+    # an individual will adopt protective behaviour if their given behaviour value (composed of attitude and risk)
+    # is greater than the set threshold (otherwise they will stop adopting protective behaviour)
     def revise_behaviour(self):
 
         max_risk_set = []
@@ -285,8 +286,8 @@ class Region(ObjectGrid2D):
         for currentPatch in self.live_patches:
             for agent in currentPatch.agents:
 
-                stubbed_rec_vaccinate_value = 1
-                stubbed_rec_protect_value = 0
+                stubbed_rec_vaccinate_value = random.uniform(-1, 1.0)
+                stubbed_rec_protect_value = random.uniform(-1, 1.0)
 
                 salient_riskV = self.get_risk(agent, currentPatch, stubbed_rec_vaccinate_value, max_risk, self.current_tick)
                 salient_riskNV = self.get_risk(agent, currentPatch, stubbed_rec_protect_value, max_risk, self.current_tick)

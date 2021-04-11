@@ -18,8 +18,8 @@ class DisplayModel(Steppable):
         self.global_num_immune_array = []
         self.global_num_incidence_array = []
         self.global_prevalence_array = []
-
         self.regions_affected_by_epidemic = []
+        self.individual_epoch_time = []
 
         self.iteration_count = 0
 

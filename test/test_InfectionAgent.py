@@ -1,5 +1,6 @@
 import unittest
 import sys
+
 sys.path.append("")
 
 from main.Patch import Patch
@@ -7,17 +8,22 @@ from main.InfectionAgent import InfectionAgent
 from main.Region import Region
 from panaxea.core.Model import Model
 
+
 def model_mock(test_number_of_epochs):
     return Model(test_number_of_epochs)
+
 
 def region_mock(xsize, ysize, model, R0, recovery_period, latency_period):
     return Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
 
+
 def patch_mock(x, y):
     return Patch(x, y)
 
+
 def infectionAgent_mock(model, x, y):
     return InfectionAgent(model, x, y)
+
 
 class MyTestCase(unittest.TestCase):
 
@@ -76,6 +82,7 @@ class MyTestCase(unittest.TestCase):
 
         # need to fix
         self.assertEqual(patch.agents[0].check_agent_not_exposed_not_infected_not_immune(), None)
+
 
 if __name__ == '__main__':
     unittest.main()

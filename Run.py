@@ -5,8 +5,8 @@ from main.Region import Region, RegionSteppable
 from main.DisplayModel import DisplayModel
 import time
 
-number_of_epochs = 350
-R0 = 2
+number_of_epochs = 150
+R0 = 3
 recovery_period = 5.0
 latency_period = 0.0
 population_normalisation_total = 1000000
@@ -14,9 +14,9 @@ numPP_persons = 5000
 min_agents_per_patch = 10
 
 # loading GIS data
-gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
+gisData = LoadGISData("GISdata/popn_density_italy_2015.asc")
 xsize = ysize = gisData.return_grid_size()
-population = gisData.return_population("UK")
+population = gisData.return_population("Italy")
 ascii_grid = gisData.return_ascii_grid()
 NODATA_value = gisData.return_NODATA_value()
 rows, columns = ascii_grid.shape[0], ascii_grid.shape[1]
@@ -66,6 +66,8 @@ for x in range(rows):
 for x in range(rows):
     for y in range(columns):
         region.patches[x][y].set_visible_patches(model)
+
+print(len(region.live_patches))
 
 displayModel = DisplayModel(model)
 regionSteppableModel = RegionSteppable(model, displayModel)

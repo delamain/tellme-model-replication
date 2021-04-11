@@ -1,5 +1,6 @@
 import unittest
 import sys
+
 sys.path.append("")
 
 from main.Patch import Patch
@@ -7,17 +8,22 @@ from main.InfectionAgent import InfectionAgent
 from main.Region import Region
 from panaxea.core.Model import Model
 
+
 def model_mock(test_number_of_epochs):
     return Model(test_number_of_epochs)
+
 
 def region_mock(xsize, ysize, model, R0, recovery_period, latency_period):
     return Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
 
+
 def patch_mock(x, y):
     return Patch(x, y)
 
+
 def InfectionAgent_mock(model, x, y):
     return InfectionAgent(model, x, y)
+
 
 class TestPatch(unittest.TestCase):
 
@@ -76,11 +82,10 @@ class TestPatch(unittest.TestCase):
 
         centre_patch = region.patches[2][2]
 
-        adjacent_patches = []
-        adjacent_patches.append(region.patches[3][2])
-        adjacent_patches.append(region.patches[2][3])
-        adjacent_patches.append(region.patches[1][2])
-        adjacent_patches.append(region.patches[2][1])
+        adjacent_patches = [region.patches[3][2],
+                            region.patches[2][3],
+                            region.patches[1][2],
+                            region.patches[2][1]]
 
         for patch in adjacent_patches:
             patch.within_border = True
@@ -91,6 +96,7 @@ class TestPatch(unittest.TestCase):
 
     # def test_make_infections_first_patch_self_generated(self):
     #     pass
+
 
 if __name__ == '__main__':
     unittest.main()
