@@ -21,7 +21,7 @@ def patch_mock(x, y):
     return Patch(x, y)
 
 
-def InfectionAgent_mock(model, x, y):
+def infection_agent_mock(model, x, y):
     return InfectionAgent(model, x, y)
 
 
@@ -42,8 +42,8 @@ class TestPatch(unittest.TestCase):
         model = model_mock(10)
         region = region_mock(10, 10, model, 1, 2, 5)
 
-        patch.agents.append(InfectionAgent_mock(model, x, y))
-        patch.agents.append(InfectionAgent_mock(model, x, y))
+        patch.agents.append(infection_agent_mock(model, x, y))
+        patch.agents.append(infection_agent_mock(model, x, y))
 
         self.assertEqual(len(patch.agents), 2)
 

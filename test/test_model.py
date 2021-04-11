@@ -24,7 +24,7 @@ class TestModel(unittest.TestCase):
 
     def test_add_people_to_schedule(self):
         model = model_mock(10)
-        region = region_mock(10, 10, model, 1, 2, 5)
+        region_mock(10, 10, model, 1, 2, 5)
 
         number_of_people = 10
         for x in range(0, number_of_people):

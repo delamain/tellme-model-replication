@@ -5,7 +5,7 @@ from main.Region import Region, RegionSteppable
 from main.DisplayModel import DisplayModel
 import time
 
-number_of_epochs = 150
+number_of_epochs = 10
 R0 = 3
 recovery_period = 5.0
 latency_period = 0.0
@@ -38,14 +38,14 @@ region.global_population = 0
 region.global_num_susceptible = 0
 for x in range(rows):
     for y in range(columns):
-        if (ascii_grid[x, y] != NODATA_value):
+        if ascii_grid[x, y] != NODATA_value:
             population_total += ascii_grid[x, y]
             region.patches[x][y].population = round((ascii_grid[x, y]) * factor)
             region.patches[x][y].num_susceptible = region.patches[x][y].population
             region.global_population += region.patches[x][y].population
             region.global_num_susceptible += region.patches[x][y].population
 
-            if (region.patches[x][y].population != 0):
+            if region.patches[x][y].population != 0:
                 region.patches[x][y].within_border = True
                 region.live_patches.add(region.patches[x][y])
 

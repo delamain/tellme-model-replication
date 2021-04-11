@@ -8,6 +8,23 @@ import random
 from main import Patch
 
 
+def random_xposition_within_grid(model):
+    xlimit = model.environments["agent_env"].xsize - 1
+    return random.randint(0, xlimit)
+
+
+def random_yposition_within_grid(model):
+    ylimit = model.environments["agent_env"].ysize - 1
+    return random.randint(0, ylimit)
+
+
+def triangular0to1(MM, UU):
+    if (UU < MM):
+        return math.sqrt(UU * MM)
+    else:
+        1 - math.sqrt((1 - UU) * (1 - MM))
+
+
 class Region(ObjectGrid2D):
 
     # setup_fixed_globals
@@ -29,7 +46,7 @@ class Region(ObjectGrid2D):
         self.susceptible_count_flag = 0
 
         if (latency_period == 0):
-            self.SEIR_lambda =  0
+            self.SEIR_lambda = 0
         else:
             self.SEIR_lambda = 1.0 / latency_period
 
@@ -116,7 +133,7 @@ class Region(ObjectGrid2D):
             print(self.patches[row_indices[j]][col_indices[j]].population, " ", end='')
 
         print("\nMaximum element value: ", patch_populations_matrix_numpy.max())
-        #print(np.argmax(patch_populations_matrix_numpy))
+        # print(np.argmax(patch_populations_matrix_numpy))
         a = patch_populations_matrix_numpy  # Can be of any shape
         indices = np.where(a == a.max())
         print("Indices where maximum element value is found at:", indices)
@@ -126,9 +143,9 @@ class Region(ObjectGrid2D):
 
         # setting the infectious number of agents at that individual starting patch
         print("Start number of infectious agents:", self.start_epi_population
-                                                                                 * self.patches[row_indices[i]][
-                                                                                     col_indices[
-                                                                                         i]].population)
+              * self.patches[row_indices[i]][
+                  col_indices[
+                      i]].population)
 
         self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
@@ -140,7 +157,6 @@ class Region(ObjectGrid2D):
                                                                            col_indices[i]].population - \
                                                                        self.patches[row_indices[i]][
                                                                            col_indices[i]].num_infected
-
 
     # this function will only be called once
     # increments global population and num susceptible to assist reporting
@@ -176,7 +192,7 @@ class Region(ObjectGrid2D):
     def return_prevalence(self):
         return self.global_num_infected / self.global_population
 
-    def reset_SEIR_variables(self):
+    def reset_seir_variables(self):
         self.global_num_susceptible = 0
         self.global_num_exposed = 0
         self.global_num_infected = 0
@@ -191,19 +207,12 @@ class Region(ObjectGrid2D):
 
         self.global_num_incidence += self.patches[x][y].num_incidence
 
-    def random_xposition_within_grid(self, model):
-        xlimit = model.environments["agent_env"].xsize - 1
-        return random.randint(0, xlimit)
-
-    def random_yposition_within_grid(self, model):
-        ylimit = model.environments["agent_env"].ysize - 1
-        return random.randint(0, ylimit)
-
     def revise_attitude(self):
         for currentPatch in self.live_patches:
             for agent in currentPatch.agents:
-                agent.attitudeV_current = agent.attitudeV_current # + agent.attitudeV_change
-                agent.attitudeV_current = agent.attitudeV_current + ( 1 - self.attitude_decay / 100) * (agent.attitudeV_current - agent.attitudeV_initial)
+                agent.attitudeV_current = agent.attitudeV_current  # + agent.attitudeV_change
+                agent.attitudeV_current = agent.attitudeV_current + (1 - self.attitude_decay / 100) * (
+                        agent.attitudeV_current - agent.attitudeV_initial)
 
                 if agent.attitudeV_current > 1:
                     agent.attitudeV_current = 1
@@ -212,7 +221,7 @@ class Region(ObjectGrid2D):
 
                 agent.attitudeNV_current = agent.attitudeNV_current  # + agent.attitudeV_change
                 agent.attitudeNV_current = agent.attitudeNV_current + (1 - self.attitude_decay / 100) * (
-                            agent.attitudeNV_current - agent.attitudeNV_initial)
+                        agent.attitudeNV_current - agent.attitudeNV_initial)
 
                 if agent.attitudeNV_current > 1:
                     agent.attitudeNV_current = 1
@@ -230,14 +239,6 @@ class Region(ObjectGrid2D):
             currentPatch.reps_own.ave_attitudeNV = statistics.mean(currentPatch.attitudeNV_current_set)
             currentPatch.reps_own.max_attitudeNV = max(currentPatch.attitudeV_current_set)
             currentPatch.reps_own.min_attitudeNV = min(currentPatch.attitudeNV_current_set)
-
-
-
-    def triangular0to1(self, MM, UU):
-        if (UU < MM):
-            return math.sqrt(UU * MM)
-        else:
-            1 - math.sqrt((1 - UU) * (1 - MM))
 
     def make_reps(self, model):
         for currentPatch in self.live_patches:
@@ -269,10 +270,10 @@ class Region(ObjectGrid2D):
 
             for agent in currentPatch.agents:
 
-                if (agent.behave_vaccinate == True):
+                if agent.behave_vaccinate == True:
                     count_behave_vaccinate += 1
 
-                elif (agent.behave_protect == True):
+                elif agent.behave_protect == True:
                     count_behave_protect += 1
 
             currentPatch.normsV = count_behave_vaccinate / visible_people
@@ -289,25 +290,26 @@ class Region(ObjectGrid2D):
                 stubbed_rec_vaccinate_value = random.uniform(-1, 1.0)
                 stubbed_rec_protect_value = random.uniform(-1, 1.0)
 
-                salient_riskV = self.get_risk(agent, currentPatch, stubbed_rec_vaccinate_value, max_risk, self.current_tick)
-                salient_riskNV = self.get_risk(agent, currentPatch, stubbed_rec_protect_value, max_risk, self.current_tick)
-
+                salient_riskV = self.get_risk(agent, currentPatch, stubbed_rec_vaccinate_value, max_risk,
+                                              self.current_tick)
+                salient_riskNV = self.get_risk(agent, currentPatch, stubbed_rec_protect_value, max_risk,
+                                               self.current_tick)
 
                 agent.behaviourV_value = self.attitude_weight_V * agent.attitudeV_current \
                                          + self.norms_weight_V * currentPatch.normsV + self.risk_weight_V * salient_riskV
                 agent.behaviourNV_value = self.attitude_weight_NV * agent.attitudeNV_current \
-                                   + self.norms_weight_NV * currentPatch.normsV + self.risk_weight_NV * salient_riskNV
+                                          + self.norms_weight_NV * currentPatch.normsV + self.risk_weight_NV * salient_riskNV
 
                 # normsV-change
 
-                if (agent.behave_vaccinate == False and agent.behaviourV_value > self.protectV_threshold):
+                if agent.behave_vaccinate == False and agent.behaviourV_value > self.protectV_threshold:
                     agent.seek_vaccination(self)
 
-                if (agent.behave_protect == True):
-                    if (agent.behaviourNV_value < self.protectV_threshold):
+                if agent.behave_protect == True:
+                    if agent.behaviourNV_value < self.protectV_threshold:
                         agent.behave_protect = False
                 else:
-                    if (agent.behaviourNV_value > self.protectV_threshold):
+                    if agent.behaviourNV_value > self.protectV_threshold:
                         agent.behave_protect = True
 
         for currentPatch in self.live_patches:
@@ -315,18 +317,17 @@ class Region(ObjectGrid2D):
             prop_protect_patch_count = 0
 
             for agent in currentPatch.agents:
-                if (agent.behave_vaccinate == True):
+                if agent.behave_vaccinate == True:
                     prop_vaccinate_patch_count += 1
 
-                elif (agent.behave_protect == True):
+                elif agent.behave_protect == True:
                     prop_protect_patch_count += 1
 
             currentPatch.reps_own.prop_vaccinate_patch = prop_vaccinate_patch_count / len(currentPatch.agents)
             currentPatch.reps_own.prop_protect_patch = prop_protect_patch_count / len(currentPatch.agents)
-    
+
             # if (currentPatch.reps_own.prop_vaccinate_patch != 0):
             #     print("Number at own patch proportion vacc: ", currentPatch.reps_own.prop_vaccinate_patch)
-
 
     # WILL PRINT OUT MATRIX WITH AXIS
     # ------------------------------> (y) COLUMNS
@@ -340,9 +341,10 @@ class Region(ObjectGrid2D):
     def print_out_region_patches(self):
         for x in range(self.rows):
             for y in range(self.columns):
-                print("[",self.patches[x][y].number_of_agents_at_patch(),"]", end="")
+                print("[", self.patches[x][y].number_of_agents_at_patch(), "]", end="")
                 if y == (self.columns - 1):
                     print(" ")
+
 
 class RegionSteppable(Steppable):
 
@@ -371,12 +373,11 @@ class RegionSteppable(Steppable):
         beta_lambda_gamma = model.environments["agent_env"].return_beta_lambda_gamma()
         travel_rate_travel_short = model.environments["agent_env"].return_travel_rate_travel_short()
 
-
         region = model.environments["agent_env"]
         patches = region.patches
 
         # need to rest global variables before counting them again
-        region.reset_SEIR_variables()
+        region.reset_seir_variables()
 
         new_cases_made = 0
 
@@ -384,18 +385,24 @@ class RegionSteppable(Steppable):
         # live_patches_list = list(model.environments["agent_env"].live_patches)
         # random.shuffle(live_patches_list)
         for currentPatch in live_patches_list:
-            patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch, beta_lambda_gamma[0], region.efficacy_protect, region.efficacy_vaccine)
+            patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch,
+                                                                                          beta_lambda_gamma[0],
+                                                                                          region.efficacy_protect,
+                                                                                          region.efficacy_vaccine)
             new_cases_made += patch_new_cases_made
 
         for currentPatch in live_patches_list:
-            Patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0], travel_rate_travel_short[1])
+            Patch.Patch.make_infections_second_patch_travelling(currentPatch, model, travel_rate_travel_short[0],
+                                                                travel_rate_travel_short[1])
 
         migrate_infections = travel_rate_travel_short[0] * (1 - travel_rate_travel_short[1]) * new_cases_made
 
         self.count_of_patches_with_incidence_greater_than_susceptible = 0
 
         for currentPatch in live_patches_list:
-            self.count_of_patches_with_incidence_greater_than_susceptible = Patch.Patch.make_infections_third_calculate_incidence(currentPatch, travel_rate_travel_short[0], migrate_infections, global_population, self.count_of_patches_with_incidence_greater_than_susceptible)
+            self.count_of_patches_with_incidence_greater_than_susceptible = Patch.Patch.make_infections_third_calculate_incidence(
+                currentPatch, travel_rate_travel_short[0], migrate_infections, global_population,
+                self.count_of_patches_with_incidence_greater_than_susceptible)
             region.global_num_incidence += currentPatch.num_incidence
 
             # if (model.environments["agent_env"].global_num_incidence < 1):
@@ -404,11 +411,12 @@ class RegionSteppable(Steppable):
             #     self.displayModel.end_routine()
             #     exit()
 
-        print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ", self.count_of_patches_with_incidence_greater_than_susceptible)
-
+        print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ",
+              self.count_of_patches_with_incidence_greater_than_susceptible)
 
         for currentPatch in live_patches_list:
-            Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1], region.incidence_discount)
+            Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1],
+                                            region.incidence_discount)
             region.update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
 
         for currentPatch in live_patches_list:
@@ -421,5 +429,3 @@ class RegionSteppable(Steppable):
         region.revise_behaviour()
 
         region.current_tick += 1
-
-

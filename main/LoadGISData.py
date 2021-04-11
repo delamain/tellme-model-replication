@@ -7,8 +7,6 @@ class LoadGISData:
         self.ncols = linecache.getline(popn_density_file, 1)
         self.nrows = linecache.getline(popn_density_file, 2)
 
-        assert self.ncols == self.nrows
-
         self.xllcorner = linecache.getline(popn_density_file, 3)
         self.yllcorner = linecache.getline(popn_density_file, 4)
         self.cellsize = linecache.getline(popn_density_file, 5)
@@ -26,7 +24,7 @@ class LoadGISData:
 
     def return_grid_size(self):
 
-        if (len(self.ascii_grid) == len(self.ascii_grid[0])):
+        if len(self.ascii_grid) == len(self.ascii_grid[0]):
             return len(self.ascii_grid)
         else:
             print("Sizes do not match")
