@@ -7,11 +7,13 @@ sys.path.append("")
 
 from main.LoadGISData import LoadGISData
 
+def mock_gis_data_object():
+    return LoadGISData("GISdata/popn_density_uk_2015.asc")
 
 class TestLoadGISData(unittest.TestCase):
 
     def test_LoadGISDataUK_ncols_rows(self):
-        gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
+        gisData = mock_gis_data_object()
         nrows = [int(s) for s in gisData.nrows.split() if s.isdigit()]
         ncols = [int(s) for s in gisData.ncols.split() if s.isdigit()]
 
@@ -19,7 +21,7 @@ class TestLoadGISData(unittest.TestCase):
         self.assertEqual(ncols[0], 312)
 
     def test_numpy_count_of_non_zero_is_same_as_manual(self):
-        gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
+        gisData = mock_gis_data_object()
 
         count_non_zero_patch = 0
 
@@ -32,6 +34,15 @@ class TestLoadGISData(unittest.TestCase):
 
         self.assertEqual(numpyCount, count_non_zero_patch)
 
+    def test_return_correct_population(self):
+        gisData = mock_gis_data_object()
+        population = gisData.return_population("UK")
+        self.assertEqual(population, 64)
+
+    def test_return_incorrect_population(self):
+        gisData = mock_gis_data_object()
+        population = gisData.return_population("Italy")
+        self.assertNotEqual(population, 64)
 
 if __name__ == '__main__':
     unittest.main()

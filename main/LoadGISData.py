@@ -89,6 +89,8 @@ class LoadGISData:
             return 9.7
         elif (country == "UK"):
             return 64
+        else:
+            return print("Please enter a European state.")
 
     def return_NODATA_value(self):
         return self.NODATA_value

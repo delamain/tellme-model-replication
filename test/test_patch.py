@@ -40,7 +40,7 @@ class TestPatch(unittest.TestCase):
 
         patch = patch_mock(x, y)
         model = model_mock(10)
-        region = region_mock(10, 10, model, 1, 2, 5)
+        region_mock(10, 10, model, 1, 2, 5)
 
         patch.agents.append(infection_agent_mock(model, x, y))
         patch.agents.append(infection_agent_mock(model, x, y))
@@ -67,8 +67,6 @@ class TestPatch(unittest.TestCase):
 
         patch = region.patches[2][2]
         patch.set_visible_patches(model)
-        for patch in patch.visible_patches:
-            print(patch.x, patch.y)
 
         self.assertEqual(len(patch.visible_patches), 0)
 
@@ -93,16 +91,6 @@ class TestPatch(unittest.TestCase):
         centre_patch.set_visible_patches(model)
 
         self.assertEqual(len(centre_patch.visible_patches), 4)
-
-    # def test_make_infections_first_patch_self_generated(self):
-    #     pass
-
-    # def test_make_infections_third_calculate_incidence_greater_than_susceptible(self):
-    #     model = model_mock(10)
-    #     region = region_mock(10, 10, model, 1, 2, 5)
-    #     region.patches[0][0] = patch_mock(0, 0)
-    #
-    #     region.patches[0][0].make_infections_third_calculate_incidence(0.25, 100, 1000, 5)
 
     def test_update_SEIR_persons_first_infected_day_count(self):
         number_of_epochs = 10
@@ -147,6 +135,113 @@ class TestPatch(unittest.TestCase):
         patch.update_SEIR_persons_first(SEIR_lambda, SEIR_gamma)
 
         self.assertEqual(patch.agents[0].disease_day, 0)
+
+    def test_make_infections_third_calculate_incidence_no_new_cases_made(self):
+        number_of_epochs = 10
+        xsize = ysize = 10
+        r0 = 1
+        recovery_period = 1
+        latency_period = 1
+        xcoord = ycoord = 0
+        travel_rate = 0.25
+        migrate_infections = 5
+        global_population = 25
+        count = 0
+        SEIR_lambda = 1.0 / latency_period
+        SEIR_gamma = 1.0 / recovery_period
+
+        model = model_mock(number_of_epochs)
+        region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
+        patch = patch_mock(xcoord, ycoord)
+        patch.new_cases_made = 0
+        patch.population = 10
+        patch.num_travel_incases = 0
+        patch.num_susceptible = 10
+
+        returned_count = patch.make_infections_third_calculate_incidence(travel_rate, migrate_infections, global_population, count)
+
+        self.assertEqual(returned_count, 1)
+
+    def test_make_infections_third_calculate_incidence_some_new_cases_made(self):
+        number_of_epochs = 10
+        xsize = ysize = 10
+        r0 = 1
+        recovery_period = 1
+        latency_period = 1
+        xcoord = ycoord = 0
+        travel_rate = 0.25
+        migrate_infections = 5
+        global_population = 25
+        count = 0
+        SEIR_lambda = 1.0 / latency_period
+        SEIR_gamma = 1.0 / recovery_period
+
+        model = model_mock(number_of_epochs)
+        region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
+        patch = patch_mock(xcoord, ycoord)
+        patch.new_cases_made = 5
+        patch.population = 10
+        patch.num_travel_incases = 0
+        patch.num_susceptible = 5
+
+        returned_count = patch.make_infections_third_calculate_incidence(travel_rate, migrate_infections,
+                                                                         global_population, count)
+
+        self.assertEqual(returned_count, 0)
+
+    def test_make_infections_third_calculate_incidence_greater_than_susceptible(self):
+        number_of_epochs = 10
+        xsize = ysize = 10
+        r0 = 1
+        recovery_period = 1
+        latency_period = 1
+        xcoord = ycoord = 0
+        travel_rate = 0.25
+        migrate_infections = 5
+        global_population = 25
+        count = 0
+        SEIR_lambda = 1.0 / latency_period
+        SEIR_gamma = 1.0 / recovery_period
+
+        model = model_mock(number_of_epochs)
+        region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
+        patch = patch_mock(xcoord, ycoord)
+        patch.new_cases_made = 5
+        patch.population = 10
+        patch.num_travel_incases = 15
+        patch.num_susceptible = 5
+
+        patch.make_infections_third_calculate_incidence(travel_rate, migrate_infections,
+                                                                         global_population, count)
+
+        self.assertEqual(patch.num_susceptible, patch.num_incidence)
+
+    def test_make_infections_third_calculate_incidence_less_than_susceptible(self):
+        number_of_epochs = 10
+        xsize = ysize = 10
+        r0 = 1
+        recovery_period = 1
+        latency_period = 1
+        xcoord = ycoord = 0
+        travel_rate = 0.25
+        migrate_infections = 5
+        global_population = 25
+        count = 0
+        SEIR_lambda = 1.0 / latency_period
+        SEIR_gamma = 1.0 / recovery_period
+
+        model = model_mock(number_of_epochs)
+        region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
+        patch = patch_mock(xcoord, ycoord)
+        patch.new_cases_made = 3
+        patch.population = 10
+        patch.num_travel_incases = 0
+        patch.num_susceptible = 5
+
+        patch.make_infections_third_calculate_incidence(travel_rate, migrate_infections,
+                                                                         global_population, count)
+
+        self.assertNotEqual(patch.num_susceptible, patch.num_incidence)
 
 if __name__ == '__main__':
     unittest.main()
