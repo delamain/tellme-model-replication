@@ -211,7 +211,7 @@ class Region(ObjectGrid2D):
         for currentPatch in self.live_patches:
             for agent in currentPatch.agents:
                 agent.attitudeV_current = agent.attitudeV_current  # + agent.attitudeV_change
-                agent.attitudeV_current = agent.attitudeV_current + (1 - self.attitude_decay / 100) * (
+                agent.attitudeV_current = agent.attitudeV_initial + (1 - self.attitude_decay / 100) * (
                         agent.attitudeV_current - agent.attitudeV_initial)
 
                 if agent.attitudeV_current > 1:
@@ -220,7 +220,7 @@ class Region(ObjectGrid2D):
                     agent.attitudeV_current = 0
 
                 agent.attitudeNV_current = agent.attitudeNV_current  # + agent.attitudeV_change
-                agent.attitudeNV_current = agent.attitudeNV_current + (1 - self.attitude_decay / 100) * (
+                agent.attitudeNV_current = agent.attitudeNV_initial + (1 - self.attitude_decay / 100) * (
                         agent.attitudeNV_current - agent.attitudeNV_initial)
 
                 if agent.attitudeNV_current > 1:
@@ -248,7 +248,7 @@ class Region(ObjectGrid2D):
         if (self.risk_misperceived == False
                 or (self.epidemic_declared == True and currentTick > self.start_tick + self.misperception_duration)
                 or (person.info_received == True)):
-            if (RR > 0):
+            if RR > 0:
                 return MR
             else:
                 return patch.patch_risk
@@ -270,10 +270,10 @@ class Region(ObjectGrid2D):
 
             for agent in currentPatch.agents:
 
-                if agent.behave_vaccinate == True:
+                if agent.behave_vaccinate:
                     count_behave_vaccinate += 1
 
-                elif agent.behave_protect == True:
+                elif agent.behave_protect:
                     count_behave_protect += 1
 
             currentPatch.normsV = count_behave_vaccinate / visible_people
@@ -295,17 +295,19 @@ class Region(ObjectGrid2D):
                 salient_riskNV = self.get_risk(agent, currentPatch, stubbed_rec_protect_value, max_risk,
                                                self.current_tick)
 
-                agent.behaviourV_value = self.attitude_weight_V * agent.attitudeV_current \
-                                         + self.norms_weight_V * currentPatch.normsV + self.risk_weight_V * salient_riskV
-                agent.behaviourNV_value = self.attitude_weight_NV * agent.attitudeNV_current \
-                                          + self.norms_weight_NV * currentPatch.normsV + self.risk_weight_NV * salient_riskNV
+                agent.behaviourV_value = (self.attitude_weight_V * agent.attitudeV_current) \
+                                         + (self.norms_weight_V * currentPatch.normsV) + (
+                                                 self.risk_weight_V * salient_riskV)
+                agent.behaviourNV_value = (self.attitude_weight_NV * agent.attitudeNV_current) \
+                                          + (self.norms_weight_NV * currentPatch.normsV) + (
+                                                  self.risk_weight_NV * salient_riskNV)
 
                 # normsV-change
 
                 if agent.behave_vaccinate == False and agent.behaviourV_value > self.protectV_threshold:
                     agent.seek_vaccination(self)
 
-                if agent.behave_protect == True:
+                if agent.behave_protect:
                     if agent.behaviourNV_value < self.protectV_threshold:
                         agent.behave_protect = False
                 else:

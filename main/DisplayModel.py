@@ -74,6 +74,9 @@ class DisplayModel(Steppable):
         prevalance = self.model.return_prevalence()
         regions_affected_by_epidemic = self.regions_affected_by_epidemic_calculation()
 
+        if self.iteration_count > 0 and incidence < self.global_num_incidence_array[self.iteration_count-1]:
+            print("Incidence is decreasing. STOP.")
+
         self.global_number_of_epochs.append(self.number_of_epochs_count)
         self.global_num_susceptible_array.append(S)
         self.global_num_exposed_array.append(E)

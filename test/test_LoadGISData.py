@@ -10,19 +10,6 @@ from main.LoadGISData import LoadGISData
 
 class TestLoadGISData(unittest.TestCase):
 
-    def test_GISData_matrix_is_square(self):
-        loadedGISMatrix = np.loadtxt("GISdata/popn_density_uk_2015.asc", skiprows=6)
-        rows = loadedGISMatrix.shape[0]
-        columns = loadedGISMatrix.shape[1]
-        self.assertEqual(rows, columns)
-
-    def test_resampled_GISData_matrix_is_square(self):
-        loadedGISMatrix = np.loadtxt("GISdata/popn_density_uk_2015.asc", skiprows=6)
-        resampledMatrix = cv2.resize(loadedGISMatrix, dsize=(81, 81), interpolation=cv2.INTER_NEAREST)
-        rows = resampledMatrix.shape[0]
-        columns = resampledMatrix.shape[1]
-        self.assertEqual(rows, columns)
-
     def test_LoadGISDataUK_ncols_rows(self):
         gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
         nrows = [int(s) for s in gisData.nrows.split() if s.isdigit()]

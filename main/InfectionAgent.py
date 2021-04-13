@@ -23,7 +23,6 @@ class InfectionAgent(Agent):
         self.attitudeV_initial = None
         self.attitudeV_current = None
         self.behaviourV_value = None
-        self.behave_vaccinate = None
         self.attitudeNV_initial = None
         self.attitudeNV_current = None
         self.behave_protect = False

@@ -22,6 +22,9 @@ class LoadGISData:
         self.rows = self.ascii_grid.shape[0]
         self.columns = self.ascii_grid.shape[1]
 
+        # checking the data is square
+        assert self.rows == self.columns
+
     def return_grid_size(self):
 
         if len(self.ascii_grid) == len(self.ascii_grid[0]):
@@ -107,6 +110,8 @@ class LoadGISData:
 
     def return_count_of_non_zero_patches(self):
         return np.count_nonzero(self.ascii_grid != self.NODATA_value)
+
+
 
 
 

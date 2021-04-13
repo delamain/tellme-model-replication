@@ -97,6 +97,56 @@ class TestPatch(unittest.TestCase):
     # def test_make_infections_first_patch_self_generated(self):
     #     pass
 
+    # def test_make_infections_third_calculate_incidence_greater_than_susceptible(self):
+    #     model = model_mock(10)
+    #     region = region_mock(10, 10, model, 1, 2, 5)
+    #     region.patches[0][0] = patch_mock(0, 0)
+    #
+    #     region.patches[0][0].make_infections_third_calculate_incidence(0.25, 100, 1000, 5)
+
+    def test_update_SEIR_persons_first_infected_day_count(self):
+        number_of_epochs = 10
+        xsize = ysize = 10
+        r0 = 1
+        recovery_period = 1
+        latency_period = 1
+        xcoord = ycoord = 0
+        SEIR_lambda = 1.0 / latency_period
+        SEIR_gamma = 1.0 / recovery_period
+
+        model = model_mock(number_of_epochs)
+        region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
+        patch = patch_mock(xcoord, ycoord)
+        patch.agents.append(infection_agent_mock(model, xcoord, ycoord))
+
+        patch.agents[0].disease_day = 0
+        patch.agents[0].infected = True
+
+        patch.update_SEIR_persons_first(SEIR_lambda, SEIR_gamma)
+
+        self.assertEqual(patch.agents[0].disease_day, 1)
+
+    def test_update_SEIR_persons_first_not_infected_day_count(self):
+        number_of_epochs = 10
+        xsize = ysize = 10
+        r0 = 1
+        recovery_period = 1
+        latency_period = 1
+        xcoord = ycoord = 0
+        SEIR_lambda = 1.0 / latency_period
+        SEIR_gamma = 1.0 / recovery_period
+
+        model = model_mock(number_of_epochs)
+        region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
+        patch = patch_mock(xcoord, ycoord)
+        patch.agents.append(infection_agent_mock(model, xcoord, ycoord))
+
+        patch.agents[0].disease_day = 0
+        patch.agents[0].infected = False
+
+        patch.update_SEIR_persons_first(SEIR_lambda, SEIR_gamma)
+
+        self.assertEqual(patch.agents[0].disease_day, 0)
 
 if __name__ == '__main__':
     unittest.main()
