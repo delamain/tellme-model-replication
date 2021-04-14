@@ -1,5 +1,4 @@
 import statistics
-import time
 
 import numpy as np
 from panaxea.core.Environment import ObjectGrid2D
@@ -110,7 +109,6 @@ class Region(ObjectGrid2D):
         self.epidemic_declared = False
         self.start_si_tick = None
         self.current_tick = 0
-
         self.attitude_decay = 2
 
     def setup_infection(self, model):
@@ -134,7 +132,6 @@ class Region(ObjectGrid2D):
             print(self.patches[row_indices[j]][col_indices[j]].population, " ", end='')
 
         print("\nMaximum element value: ", patch_populations_matrix_numpy.max())
-        # print(np.argmax(patch_populations_matrix_numpy))
         a = patch_populations_matrix_numpy  # Can be of any shape
         indices = np.where(a == a.max())
         print("Indices where maximum element value is found at:", indices)
@@ -148,6 +145,7 @@ class Region(ObjectGrid2D):
                   col_indices[
                       i]].population)
 
+        # assigning the number of infectious agents to the starting patch
         self.patches[row_indices[i]][col_indices[i]].set_infectious_agents_setup(self.start_epi_population
                                                                                  * self.patches[row_indices[i]][
                                                                                      col_indices[
@@ -158,13 +156,6 @@ class Region(ObjectGrid2D):
                                                                            col_indices[i]].population - \
                                                                        self.patches[row_indices[i]][
                                                                            col_indices[i]].num_infected
-
-    # this function will only be called once
-    # increments global population and num susceptible to assist reporting
-    # def add_agent_to_patch(self, x, y):
-    #     self.global_population += 1
-    #     self.global_num_susceptible += 1
-    #     self.patches[x][y].increment_patch_agents()
 
     def number_of_patches(self):
         return self.rows * self.columns
@@ -205,12 +196,13 @@ class Region(ObjectGrid2D):
         self.global_num_exposed += self.patches[x][y].num_exposed
         self.global_num_infected += self.patches[x][y].num_infected
         self.global_num_immune += self.patches[x][y].num_immune
-
         self.global_num_incidence += self.patches[x][y].num_incidence
 
     def revise_attitude(self):
         for currentPatch in self.live_patches:
             for agent in currentPatch.agents:
+
+                # attitudeV_change has not been implemented yet
                 agent.attitudeV_current = agent.attitudeV_current  # + agent.attitudeV_change
                 agent.attitudeV_current = agent.attitudeV_initial + (1 - self.attitude_decay / 100) * (
                         agent.attitudeV_current - agent.attitudeV_initial)
@@ -303,8 +295,6 @@ class Region(ObjectGrid2D):
                                           + (self.norms_weight_NV * currentPatch.normsV) + (
                                                   self.risk_weight_NV * salient_riskNV)
 
-                # normsV-change
-
                 if agent.behave_vaccinate == False and agent.behaviourV_value > self.protectV_threshold:
                     agent.seek_vaccination(self)
 
@@ -328,9 +318,6 @@ class Region(ObjectGrid2D):
 
             currentPatch.reps_own.prop_vaccinate_patch = prop_vaccinate_patch_count / len(currentPatch.agents)
             currentPatch.reps_own.prop_protect_patch = prop_protect_patch_count / len(currentPatch.agents)
-
-            # if (currentPatch.reps_own.prop_vaccinate_patch != 0):
-            #     print("Number at own patch proportion vacc: ", currentPatch.reps_own.prop_vaccinate_patch)
 
     # WILL PRINT OUT MATRIX WITH AXIS
     # ------------------------------> (y) COLUMNS
@@ -377,7 +364,6 @@ class RegionSteppable(Steppable):
         travel_rate_travel_short = model.environments["agent_env"].return_travel_rate_travel_short()
 
         region = model.environments["agent_env"]
-        patches = region.patches
 
         # need to rest global variables before counting them again
         region.reset_seir_variables()
@@ -388,7 +374,6 @@ class RegionSteppable(Steppable):
         # live_patches_list = list(model.environments["agent_env"].live_patches)
         # random.shuffle(live_patches_list)
 
-        start_time = time.time()
         for currentPatch in live_patches_list:
             patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch,
                                                                                           beta_lambda_gamma[0],
@@ -410,6 +395,7 @@ class RegionSteppable(Steppable):
                 self.count_of_patches_with_incidence_greater_than_susceptible)
             region.global_num_incidence += currentPatch.num_incidence
 
+            # Uncomment this for the programme to close when there are no new infection reported.
             # if (model.environments["agent_env"].global_num_incidence < 1):
             #     print("No new infections recorded on this iteration; programme closing.")
             #     #model.environments["agent_env"].exit = True
@@ -419,17 +405,10 @@ class RegionSteppable(Steppable):
         print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ",
               self.count_of_patches_with_incidence_greater_than_susceptible)
 
-        print("--- Make infections took %s seconds ---" % (time.time() - start_time))
-
-        start_time = time.time()
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1],
                                             region.incidence_discount)
             region.update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
-
-        print("--- Update SEIR patches took %s seconds ---" % (time.time() - start_time))
-
-        start_time = time.time()
 
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
@@ -437,14 +416,7 @@ class RegionSteppable(Steppable):
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
 
-        print("--- Update SEIR persons took %s seconds ---" % (time.time() - start_time))
-
-        start_time = time.time()
         region.revise_attitude()
-        print("--- Revise attitude took %s seconds ---" % (time.time() - start_time))
-
-        start_time = time.time()
         region.revise_behaviour()
-        print("--- Revise behaviour took %s seconds ---" % (time.time() - start_time))
 
         region.current_tick += 1

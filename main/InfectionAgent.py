@@ -75,6 +75,7 @@ class InfectionAgent(Agent):
     def initial_attitude(self, model):
         region = model.environments["agent_env"]
 
+        # triangular distribution to set iniital attitude
         random_float = random.uniform(0, 1.0)
         if random_float < region.prop_antivax:
             self.attitudeV_initial = triangular0to1(0.125, random.uniform(0, 1.0))
@@ -83,6 +84,7 @@ class InfectionAgent(Agent):
 
         self.attitudeNV_initial = triangular0to1(0.75, random.uniform(0, 1.0))
 
+        # dependant if the individual is within the given target group (i.e. at risk)
         if self.in_target:
             self.attitudeV_initial = min(
                 self.attitudeV_initial + ((1 - region.prop_in_target) * region.in_target_attitude), 1)
@@ -97,6 +99,7 @@ class InfectionAgent(Agent):
         self.attitudeV_current = self.attitudeV_initial
         self.attitudeNV_current = self.attitudeNV_initial
 
+    # called once the individual's behaviour value reaches a certain threshold
     def seek_vaccination(self, region):
 
         if region.restrict_vaccine is False or region.epidemic_declared is True:

@@ -104,8 +104,6 @@ class Patch(Steppable):
         PP = self.reps_own.prop_protect_patch
         PV = self.reps_own.prop_vaccinate_patch
 
-        # print("PP:", PP, " PV:", PV)
-
         self.beta_local = SEIR_beta * (1 - (PP * efficacy_protect)) * (1 - (PV * efficacy_vaccine))
 
         self.new_cases_made = self.num_infected * self.beta_local * (self.num_susceptible / self.population)
@@ -134,8 +132,6 @@ class Patch(Steppable):
                     neighbour[1]].num_travel_incases = model.environments["agent_env"].patches[neighbour[0]][
                                                            neighbour[1]].num_travel_incases + (
                                                                num_distribute * (self.population / nbr_popn))
-
-        # self.num_travel_incases = self.num_travel_incases + (num_distribute * (self.population / nbr_popn))
 
     def make_infections_third_calculate_incidence(self, travel_rate, migrate_infections, global_population, count):
         self.num_incidence = self.new_cases_made * (1 - travel_rate)
@@ -196,7 +192,7 @@ class Patch(Steppable):
             # print(len(self.visible_patches))
             # no visible patches and so get division by 0 error for the neighbouring populations
             # artificial value is set for cumulative incidence
-            self.cumulative_incidenc = 0.1
+            self.cumulative_incidence = 0.1
 
         seirValue = self.num_susceptible + self.num_exposed + self.num_infected + self.num_immune
 

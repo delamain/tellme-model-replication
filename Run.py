@@ -5,6 +5,7 @@ from main.Region import Region, RegionSteppable
 from main.DisplayModel import DisplayModel
 import time
 
+# Configure model parameters here
 number_of_epochs = 150
 R0 = 3
 recovery_period = 5.0
@@ -67,15 +68,12 @@ for x in range(rows):
     for y in range(columns):
         region.patches[x][y].set_visible_patches(model)
 
-print(len(region.live_patches))
-
-
 count_pop_dens = 0
 
 for patch in region.live_patches:
     count_pop_dens += patch.population
 
-print("Average population density: ", count_pop_dens/len(region.live_patches))
+print("Average population density: ", count_pop_dens / len(region.live_patches))
 
 displayModel = DisplayModel(model)
 regionSteppableModel = RegionSteppable(model, displayModel)

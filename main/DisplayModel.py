@@ -25,6 +25,7 @@ def create_video_from_images():
     cv2.destroyAllWindows()
     video.release()
 
+    # Removes video images from the file once complete.
     # for filename in os.listdir('visualisations/'):
     #     if filename.endswith('.png'):
     #         os.remove(os.path.join('visualisations/', filename))
@@ -73,9 +74,6 @@ class DisplayModel(Steppable):
         incidence = self.model.return_num_incidence()
         prevalance = self.model.return_prevalence()
         regions_affected_by_epidemic = self.regions_affected_by_epidemic_calculation()
-
-        if self.iteration_count > 0 and incidence < self.global_num_incidence_array[self.iteration_count-1]:
-            print("Incidence is decreasing. STOP.")
 
         self.global_number_of_epochs.append(self.number_of_epochs_count)
         self.global_num_susceptible_array.append(S)
