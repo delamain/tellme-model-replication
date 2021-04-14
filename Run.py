@@ -28,7 +28,7 @@ region = Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_p
 
 # normalise to population count
 factor = (population_normalisation_total * population) / sum_popn_of_patches_with_popn_greater_than_zero
-print("Factor value:", factor)
+# print("Factor value:", factor)
 print("Count of non-zero patches:", gisData.return_count_of_non_zero_patches())
 print("Sum of population, with patches with a popn > 0:", sum_popn_of_patches_with_popn_greater_than_zero)
 print("Greatest patch population value:", ascii_grid.max() * factor)
@@ -88,6 +88,12 @@ for x in range(region.rows):
         region.visualised_patches[x][y] = region.patches[x][y].color
 
 displayModel.display_graphical_matrix(region.visualised_patches)
+
+print("The model will run for", number_of_epochs, "iterations.")
+print("R0:", R0, " Recovery period:", recovery_period, "Latency period:", latency_period)
+print("Programme will wait for five seconds before starting.")
+time.sleep(5)
+
 
 start_time = time.time()
 model.run()

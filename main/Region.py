@@ -127,14 +127,14 @@ class Region(ObjectGrid2D):
         row_indices, col_indices = np.unravel_index(flat_indices, patch_populations_matrix_numpy.shape)
 
         # printing the maximum five elements and their indices
-        for j in range(n):
-            print(row_indices[j], col_indices[j], " ", end='')
-            print(self.patches[row_indices[j]][col_indices[j]].population, " ", end='')
+        # for j in range(n):
+        #     print(row_indices[j], col_indices[j], " ", end='')
+        #     print(self.patches[row_indices[j]][col_indices[j]].population, " ", end='')
 
-        print("\nMaximum element value: ", patch_populations_matrix_numpy.max())
+        print("Maximum element population value: ", patch_populations_matrix_numpy.max())
         a = patch_populations_matrix_numpy  # Can be of any shape
         indices = np.where(a == a.max())
-        print("Indices where maximum element value is found at:", indices)
+        # print("Indices where maximum element value is found at:", indices)
 
         # selecting a random element from the top 5 largest
         i = random.randint(0, 4)
@@ -354,9 +354,9 @@ class RegionSteppable(Steppable):
         print(
             "S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2],
                                                                 SEIR_variables[3]))
-        print("GLOBAL INCIDENCE: ", global_incidence)
 
-        print("TOTAL: {0}".format(round(total_people)))
+        print("Total number of people (not agents) within model: {0}".format(round(total_people)))
+        print("Global level of incidence (new infections): {0}".format(round(global_incidence)))
 
     def step_main(self, model):
         global_population = model.environments["agent_env"].return_global_population()
@@ -402,7 +402,7 @@ class RegionSteppable(Steppable):
             #     self.displayModel.end_routine()
             #     exit()
 
-        print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ",
+        print("Number of patches with no new cases this iteration:",
               self.count_of_patches_with_incidence_greater_than_susceptible)
 
         for currentPatch in live_patches_list:
