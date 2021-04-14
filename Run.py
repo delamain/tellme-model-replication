@@ -90,7 +90,7 @@ for x in range(region.rows):
 displayModel.display_graphical_matrix(region.visualised_patches)
 
 print("The model will run for", number_of_epochs, "iterations.")
-print("R0:", R0, " Recovery period:", recovery_period, "Latency period:", latency_period)
+print("R0:", R0, "Recovery period:", recovery_period, "Latency period:", latency_period)
 print("Programme will wait for five seconds before starting.")
 time.sleep(5)
 
