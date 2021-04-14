@@ -352,7 +352,7 @@ class RegionSteppable(Steppable):
         total_people = SEIR_variables[0] + SEIR_variables[1] + SEIR_variables[2] + SEIR_variables[3]
 
         print(
-            "S:{0:.2f}, E:{1:.2f}, I:{2:.2f}, R:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2],
+            "Susceptible:{0:.2f}, Exposed:{1:.2f}, Infected:{2:.2f}, Recovered:{3:.2f}".format(SEIR_variables[0], SEIR_variables[1], SEIR_variables[2],
                                                                 SEIR_variables[3]))
 
         print("Total number of people (not agents) within model: {0}".format(round(total_people)))
