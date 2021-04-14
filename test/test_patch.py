@@ -9,27 +9,15 @@ from main.Region import Region
 from panaxea.core.Model import Model
 
 
-def model_mock(test_number_of_epochs):
-    return Model(test_number_of_epochs)
-
-
 def region_mock(xsize, ysize, model, R0, recovery_period, latency_period):
     return Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
-
-
-def patch_mock(x, y):
-    return Patch(x, y)
-
-
-def infection_agent_mock(model, x, y):
-    return InfectionAgent(model, x, y)
 
 
 class TestPatch(unittest.TestCase):
 
     def test_patch_xy(self):
-        testX = patch_mock(1, 0)
-        testY = patch_mock(0, 1)
+        testX = Patch(1, 0)
+        testY = Patch(0, 1)
 
         self.assertEqual(testX.return_x_coord(), 1)
         self.assertEqual(testY.return_y_coord(), 1)
@@ -38,32 +26,32 @@ class TestPatch(unittest.TestCase):
         x = 0
         y = 0
 
-        patch = patch_mock(x, y)
-        model = model_mock(10)
+        patch = Patch(x, y)
+        model = Model(10)
         region_mock(10, 10, model, 1, 2, 5)
 
-        patch.agents.append(infection_agent_mock(model, x, y))
-        patch.agents.append(infection_agent_mock(model, x, y))
+        patch.agents.append(InfectionAgent(model, x, y))
+        patch.agents.append(InfectionAgent(model, x, y))
 
         self.assertEqual(len(patch.agents), 2)
 
     def test_infectious_agents_startup_less(self):
-        patch = patch_mock(0, 0)
+        patch = Patch(0, 0)
         patch.set_infectious_agents_setup(90)
         self.assertEqual(patch.num_infected, 100)
 
     def test_infectious_agents_startup_more(self):
-        patch = patch_mock(0, 0)
+        patch = Patch(0, 0)
         patch.set_infectious_agents_setup(110)
         self.assertEqual(patch.num_infected, 110)
 
     def test_visible_patches_empty(self):
-        model = model_mock(10)
+        model = Model(10)
         region = region_mock(10, 10, model, 1, 2, 5)
 
         for x in range(region.xsize):
             for y in range(region.ysize):
-                region.patches[x][y] = patch_mock(x, y)
+                region.patches[x][y] = Patch(x, y)
 
         patch = region.patches[2][2]
         patch.set_visible_patches(model)
@@ -71,12 +59,12 @@ class TestPatch(unittest.TestCase):
         self.assertEqual(len(patch.visible_patches), 0)
 
     def test_visible_patches_people_occupied(self):
-        model = model_mock(10)
+        model = Model(10)
         region = region_mock(10, 10, model, 1, 2, 5)
 
         for x in range(region.xsize):
             for y in range(region.ysize):
-                region.patches[x][y] = patch_mock(x, y)
+                region.patches[x][y] = Patch(x, y)
 
         centre_patch = region.patches[2][2]
 
@@ -102,10 +90,10 @@ class TestPatch(unittest.TestCase):
         SEIR_lambda = 1.0 / latency_period
         SEIR_gamma = 1.0 / recovery_period
 
-        model = model_mock(number_of_epochs)
+        model = Model(number_of_epochs)
         region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
-        patch = patch_mock(xcoord, ycoord)
-        patch.agents.append(infection_agent_mock(model, xcoord, ycoord))
+        patch = Patch(xcoord, ycoord)
+        patch.agents.append(InfectionAgent(model, xcoord, ycoord))
 
         patch.agents[0].disease_day = 0
         patch.agents[0].infected = True
@@ -124,10 +112,10 @@ class TestPatch(unittest.TestCase):
         SEIR_lambda = 1.0 / latency_period
         SEIR_gamma = 1.0 / recovery_period
 
-        model = model_mock(number_of_epochs)
+        model = Model(number_of_epochs)
         region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
-        patch = patch_mock(xcoord, ycoord)
-        patch.agents.append(infection_agent_mock(model, xcoord, ycoord))
+        patch = Patch(xcoord, ycoord)
+        patch.agents.append(InfectionAgent(model, xcoord, ycoord))
 
         patch.agents[0].disease_day = 0
         patch.agents[0].infected = False
@@ -150,9 +138,9 @@ class TestPatch(unittest.TestCase):
         SEIR_lambda = 1.0 / latency_period
         SEIR_gamma = 1.0 / recovery_period
 
-        model = model_mock(number_of_epochs)
+        model = Model(number_of_epochs)
         region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
-        patch = patch_mock(xcoord, ycoord)
+        patch = Patch(xcoord, ycoord)
         patch.new_cases_made = 0
         patch.population = 10
         patch.num_travel_incases = 0
@@ -176,9 +164,9 @@ class TestPatch(unittest.TestCase):
         SEIR_lambda = 1.0 / latency_period
         SEIR_gamma = 1.0 / recovery_period
 
-        model = model_mock(number_of_epochs)
+        model = Model(number_of_epochs)
         region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
-        patch = patch_mock(xcoord, ycoord)
+        patch = Patch(xcoord, ycoord)
         patch.new_cases_made = 5
         patch.population = 10
         patch.num_travel_incases = 0
@@ -189,7 +177,7 @@ class TestPatch(unittest.TestCase):
 
         self.assertEqual(returned_count, 0)
 
-    def test_make_infections_third_calculate_incidence_greater_than_susceptible(self):
+    def test_make_infections_third_calculate_incidence_greater_than_susceptible_return_susceptible(self):
         number_of_epochs = 10
         xsize = ysize = 10
         r0 = 1
@@ -203,9 +191,9 @@ class TestPatch(unittest.TestCase):
         SEIR_lambda = 1.0 / latency_period
         SEIR_gamma = 1.0 / recovery_period
 
-        model = model_mock(number_of_epochs)
+        model = Model(number_of_epochs)
         region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
-        patch = patch_mock(xcoord, ycoord)
+        patch = Patch(xcoord, ycoord)
         patch.new_cases_made = 5
         patch.population = 10
         patch.num_travel_incases = 15
@@ -216,7 +204,7 @@ class TestPatch(unittest.TestCase):
 
         self.assertEqual(patch.num_susceptible, patch.num_incidence)
 
-    def test_make_infections_third_calculate_incidence_less_than_susceptible(self):
+    def test_make_infections_third_calculate_incidence_less_than_susceptible_return_incidence(self):
         number_of_epochs = 10
         xsize = ysize = 10
         r0 = 1
@@ -230,9 +218,9 @@ class TestPatch(unittest.TestCase):
         SEIR_lambda = 1.0 / latency_period
         SEIR_gamma = 1.0 / recovery_period
 
-        model = model_mock(number_of_epochs)
+        model = Model(number_of_epochs)
         region_mock(xsize, ysize, model, r0, recovery_period, latency_period)
-        patch = patch_mock(xcoord, ycoord)
+        patch = Patch(xcoord, ycoord)
         patch.new_cases_made = 3
         patch.population = 10
         patch.num_travel_incases = 0

@@ -8,7 +8,7 @@ sys.path.append("")
 from main.LoadGISData import LoadGISData
 
 def mock_gis_data_object():
-    return LoadGISData("GISdata/popn_density_uk_2015.asc")
+    return LoadGISData("../GISdata/popn_density_uk_2015.asc")
 
 class TestLoadGISData(unittest.TestCase):
 

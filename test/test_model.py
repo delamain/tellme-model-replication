@@ -9,21 +9,13 @@ from main.InfectionAgent import InfectionAgent
 
 
 def region_mock(xsize, ysize, model, R0, recovery_period, latency_period):
-    region = Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
-
-
-def model_mock(test_number_of_epochs):
-    return Model(test_number_of_epochs)
-
-
-def agent_mock(model, x, y):
-    return InfectionAgent(model, x, y)
+    return Region("agent_env", xsize, ysize, model, R0, recovery_period, latency_period)
 
 
 class TestModel(unittest.TestCase):
 
     def test_add_people_to_schedule(self):
-        model = model_mock(10)
+        model = Model(10)
         region_mock(10, 10, model, 1, 2, 5)
 
         number_of_people = 10

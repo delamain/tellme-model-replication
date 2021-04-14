@@ -1,4 +1,5 @@
 import statistics
+import time
 
 import numpy as np
 from panaxea.core.Environment import ObjectGrid2D
@@ -386,6 +387,8 @@ class RegionSteppable(Steppable):
         live_patches_list = region.live_patches
         # live_patches_list = list(model.environments["agent_env"].live_patches)
         # random.shuffle(live_patches_list)
+
+        start_time = time.time()
         for currentPatch in live_patches_list:
             patch_new_cases_made = Patch.Patch.make_infections_first_patch_self_generated(currentPatch,
                                                                                           beta_lambda_gamma[0],
@@ -416,10 +419,17 @@ class RegionSteppable(Steppable):
         print("NUMBER OF PATCHES WITH NEW CASES MADE = 0 ",
               self.count_of_patches_with_incidence_greater_than_susceptible)
 
+        print("--- Make infections took %s seconds ---" % (time.time() - start_time))
+
+        start_time = time.time()
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_patches(currentPatch, beta_lambda_gamma[2], beta_lambda_gamma[1],
                                             region.incidence_discount)
             region.update_global_variables_from_given_patch(currentPatch.x, currentPatch.y)
+
+        print("--- Update SEIR patches took %s seconds ---" % (time.time() - start_time))
+
+        start_time = time.time()
 
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_persons_first(currentPatch, beta_lambda_gamma[1], beta_lambda_gamma[2])
@@ -427,7 +437,14 @@ class RegionSteppable(Steppable):
         for currentPatch in live_patches_list:
             Patch.Patch.update_SEIR_persons_new_infections_second(currentPatch, beta_lambda_gamma[1])
 
+        print("--- Update SEIR persons took %s seconds ---" % (time.time() - start_time))
+
+        start_time = time.time()
         region.revise_attitude()
+        print("--- Revise attitude took %s seconds ---" % (time.time() - start_time))
+
+        start_time = time.time()
         region.revise_behaviour()
+        print("--- Revise behaviour took %s seconds ---" % (time.time() - start_time))
 
         region.current_tick += 1
