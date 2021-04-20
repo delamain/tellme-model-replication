@@ -6,7 +6,7 @@ from main.DisplayModel import DisplayModel
 import time
 
 # Configure model parameters here
-number_of_epochs = 150
+number_of_epochs = 350
 R0 = 3
 recovery_period = 5.0
 latency_period = 1.0
@@ -15,9 +15,9 @@ numPP_persons = 5000
 min_agents_per_patch = 10
 
 # loading GIS data
-gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
+gisData = LoadGISData("GISdata/popn_density_italy_2015.asc")
 xsize = ysize = gisData.return_grid_size()
-population = gisData.return_population("UK")
+population = gisData.return_population("Italy")
 ascii_grid = gisData.return_ascii_grid()
 NODATA_value = gisData.return_NODATA_value()
 rows, columns = ascii_grid.shape[0], ascii_grid.shape[1]
