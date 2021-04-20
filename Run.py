@@ -15,9 +15,9 @@ numPP_persons = 5000
 min_agents_per_patch = 10
 
 # loading GIS data
-gisData = LoadGISData("GISdata/popn_density_italy_2015.asc")
+gisData = LoadGISData("GISdata/popn_density_uk_2015.asc")
 xsize = ysize = gisData.return_grid_size()
-population = gisData.return_population("Italy")
+population = gisData.return_population("UK")
 ascii_grid = gisData.return_ascii_grid()
 NODATA_value = gisData.return_NODATA_value()
 rows, columns = ascii_grid.shape[0], ascii_grid.shape[1]
