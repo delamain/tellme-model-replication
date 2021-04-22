@@ -76,9 +76,9 @@ class Region(ObjectGrid2D):
         self.worry_relative = 1
         self.attitude_weight_V = 0.3
         self.norms_weight_V = 0.15
-        self.protectV_threshold = 0.3
+        self.protectV_threshold = 1.0
         self.attitude_weight_NV = 0.35
-        self.norms_weight_NV = 0.1
+        self.norms_weight_NV = 1.0
         self.protectNV_threshold = 0.25
 
         self.efficacy_vaccine = 0.7

@@ -6,7 +6,7 @@ from main.DisplayModel import DisplayModel
 import time
 
 # Configure model parameters here
-number_of_epochs = 350
+number_of_epochs = 200
 R0 = 3
 recovery_period = 5.0
 latency_period = 1.0
